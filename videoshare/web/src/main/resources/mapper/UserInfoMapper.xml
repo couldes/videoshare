@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.videoshare.web.mapper.UserInfoMapper">
+
+    <select id="selectByEmail" resultType="com.videoshare.entity.UserInfo">
+        SELECT user_id, password, nick_name, email, bio, status, background
+        FROM user_info WHERE email = #{email}
+    </select>
+
+    <select id="selectByNickName" resultType="com.videoshare.entity.UserInfo">
+        SELECT user_id, password, nick_name, email, bio, status, background
+        FROM user_info WHERE nick_name = #{nickName}
+    </select>
+
+    <insert id="insert" parameterType="com.videoshare.entity.UserInfo">
+        INSERT INTO user_info (user_id, password, nick_name, email, status)
+        VALUES (#{userId}, #{password}, #{nickName}, #{email}, #{status})
+    </insert>
+
+    <delete id="deleteByNickName">
+        DELETE FROM user_info WHERE nick_name = #{nickName}
+    </delete>
+
+</mapper>
