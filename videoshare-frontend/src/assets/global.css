@@ -1,0 +1,120 @@
+/* =============================================
+   全局样式 & CSS 变量
+   ============================================= */
+
+:root {
+  /* 品牌色 */
+  --color-primary:     #ff2d55;
+  --color-primary-dim: rgba(255, 45, 85, 0.15);
+
+  /* 背景层级 */
+  --bg-base:    #0a0a0c;
+  --bg-surface: #111114;
+  --bg-card:    #18181c;
+  --bg-hover:   #1f1f25;
+  --bg-input:   #1a1a1f;
+
+  /* 边框 */
+  --border:       rgba(255,255,255,0.07);
+  --border-focus: rgba(255, 45, 85, 0.5);
+
+  /* 文字 */
+  --text-primary:   #f0f0f2;
+  --text-secondary: #8a8a96;
+  --text-muted:     #52525a;
+
+  /* 字体 */
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* 阴影 */
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 40px rgba(255, 45, 85, 0.2);
+
+  /* 过渡 */
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Reset ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  /* 细腻噪点纹理增加质感 */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,45,85,0.06) 0%, transparent 60%);
+}
+
+/* ===== 滚动条 ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ===== 覆盖 Element Plus 主题 ===== */
+.el-input__wrapper {
+  background-color: var(--bg-input) !important;
+  box-shadow: 0 0 0 1px var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+}
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.14) !important;
+}
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px var(--color-primary) !important;
+}
+.el-input__inner {
+  color: var(--text-primary) !important;
+  font-family: var(--font-body) !important;
+}
+.el-input__inner::placeholder {
+  color: var(--text-muted) !important;
+}
+.el-form-item__label {
+  color: var(--text-secondary) !important;
+  font-family: var(--font-body) !important;
+  font-weight: 500;
+}
+.el-form-item__error {
+  color: var(--color-primary) !important;
+}
+.el-button--primary {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  font-family: var(--font-body) !important;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.el-button--primary:hover {
+  background: #ff4d6d !important;
+  border-color: #ff4d6d !important;
+}
+.el-message {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ===== 通用工具类 ===== */
+.text-muted    { color: var(--text-secondary); }
+.text-primary  { color: var(--color-primary); }
