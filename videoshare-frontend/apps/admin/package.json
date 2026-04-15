@@ -1,0 +1,21 @@
+{
+  "name": "@videoshare/admin",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite --port 3001",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@videoshare/api": "1.0.0",
+    "@videoshare/utils": "1.0.0",
+    "@videoshare/constants": "1.0.0",
+    "@videoshare/assets": "1.0.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.7",
+    "element-plus": "^2.6.0",
+    "@element-plus/icons-vue": "^2.3.1"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@videoshare/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "exports": {
+    ".":               "./src/index.js",
+    "./request":       "./src/request.js",
+    "./account":       "./src/account.js",
+    "./admin/account": "./src/admin/account.js",
+    "./admin/user":    "./src/admin/user.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

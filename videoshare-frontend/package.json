@@ -1,22 +1,25 @@
 {
-  "name": "videoshare-frontend",
+  "name": "videoshare-fe",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "packages/api",
+    "packages/utils",
+    "packages/constants",
+    "packages/assets",
+    "apps/web",
+    "apps/admin"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "vue": "^3.4.0",
-    "vue-router": "^4.3.0",
-    "pinia": "^2.1.7",
-    "axios": "^1.6.0",
-    "element-plus": "^2.6.0",
-    "@element-plus/icons-vue": "^2.3.1"
+    "dev": "npm run dev:web & npm run dev:admin",
+    "dev:web": "npm -w @videoshare/web   run dev",
+    "dev:admin": "npm -w @videoshare/admin run dev",
+    "build": "npm run build:web && npm run build:admin",
+    "build:web": "npm -w @videoshare/web   run build",
+    "build:admin": "npm -w @videoshare/admin run build"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.5.0",
+    "@vitejs/plugin-vue": "^4.6.0",
     "vite": "^4.5.0"
   }
 }

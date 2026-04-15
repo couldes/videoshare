@@ -1,0 +1,12 @@
+{
+  "name": "@videoshare/utils",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "exports": {
+    ".":         "./src/index.js",
+    "./auth":    "./src/auth.js",
+    "./format":  "./src/format.js",
+    "./validate":"./src/validate.js"
+  }
+}

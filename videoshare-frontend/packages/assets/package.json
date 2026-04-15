@@ -1,0 +1,6 @@
+{
+  "name": "@videoshare/assets",
+  "version": "1.0.0",
+  "private": true,
+  "description": "共用 CSS：reset + Element Plus 深色主题覆盖"
+}
