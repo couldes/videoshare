@@ -4,17 +4,17 @@
 
 <mapper namespace="com.videoshare.web.mapper.UserInfoMapper">
 
-    <select id="selectByEmail" resultType="com.videoshare.entity.UserInfo">
+    <select id="selectByEmail" resultType="com.videoshare.common.entity.UserInfo">
         SELECT user_id, password, nick_name, email, bio, status, background
         FROM user_info WHERE email = #{email}
     </select>
 
-    <select id="selectByNickName" resultType="com.videoshare.entity.UserInfo">
+    <select id="selectByNickName" resultType="com.videoshare.common.entity.UserInfo">
         SELECT user_id, password, nick_name, email, bio, status, background
         FROM user_info WHERE nick_name = #{nickName}
     </select>
 
-    <insert id="insert" parameterType="com.videoshare.entity.UserInfo">
+    <insert id="insert" parameterType="com.videoshare.common.entity.UserInfo">
         INSERT INTO user_info (user_id, password, nick_name, email, status)
         VALUES (#{userId}, #{password}, #{nickName}, #{email}, #{status})
     </insert>
