@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+  路径: admin/src/main/resources/mapper/AdminUserMapper.xml
+  对应接口: com.videoshare.admin.mapper.AdminUserMapper
+
+  MyBatis XML 映射文件：把 Java 方法和 SQL 语句绑定在一起
+  namespace 必须和接口的全路径完全一致
+-->
+<mapper namespace="com.videoshare.admin.mapper.AdminUserMapper">
+
+    <!--
+      ResultMap：定义 SQL 查询结果列 → Java 对象字段 的映射关系
+      column = 数据库列名（下划线），property = Java 字段名（驼峰）
+      虽然 application.yml 里开了自动驼峰，但显式写出来更清晰可维护
+    -->
+    <resultMap id="UserInfoMap" type="com.videoshare.common.entity.UserInfo">
+        <id     column="user_id"            property="userId" />
+        <result column="nick_name"          property="nickName" />
+        <result column="email"              property="email" />
+        <result column="password"           property="password" />
+        <result column="join_time"          property="joinTime" />
+        <result column="status"             property="status" />
+        <result column="theme"              property="theme" />
+    </resultMap>
+
+    <!--
+      公共 WHERE 条件片段（<sql> 标签）
+      可以在多个查询中用 <include refid="whereClause" /> 复用
+      避免重复写同样的条件，修改时只需改这一处
+
+      <if test="..."> 是 MyBatis 动态 SQL：条件满足才加入 WHERE 子句
+    -->
+    <sql id="whereClause">
+        <where>
+            <!-- keyword 不为 null 时，对邮箱 OR 昵称做模糊搜索 -->
+            <if test="keyword != null">
+                AND (email LIKE CONCAT('%', #{keyword}, '%')
+                  OR nick_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <!-- status 不为 null 时，按状态筛选 -->
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </sql>
+
+    <!-- ============================================================
+         分页查询用户列表
+         LIMIT  = 每页条数（pageSize）
+         OFFSET = 跳过前几条（(pageNum-1) * pageSize，由 Java 计算好传入）
+         ============================================================ -->
+    <select id="selectUserList" resultMap="UserInfoMap">
+        SELECT user_id, nick_name, email, join_time, status, sex
+        FROM user_info
+        <include refid="whereClause" />
+        ORDER BY join_time DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <!-- 统计总数（和 selectUserList 条件一致，不加分页参数） -->
+    <select id="countUsers" resultType="Integer">
+        SELECT COUNT(1)
+        FROM user_info
+        <include refid="whereClause" />
+    </select>
+
+    <!-- 修改用户状态 -->
+    <update id="updateStatus">
+        UPDATE user_info
+        SET status = #{status}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 删除用户 -->
+    <delete id="deleteByUserId">
+        DELETE FROM user_info
+        WHERE user_id = #{userId}
+    </delete>
+
+    <!--
+      Dashboard：按状态统计用户数
+      返回：[{ "status": 0, "count": 5 }, { "status": 1, "count": 95 }]
+    -->
+    <select id="countByStatus" resultType="java.util.HashMap">
+        SELECT status, COUNT(1) AS `count`
+        FROM user_info
+        GROUP BY status
+    </select>
+
+    <!--
+      Dashboard：最近 N 天每天新增用户数
+      DATE_FORMAT 格式化日期为 'YYYY-MM-DD'
+      DATEDIFF 计算日期差，过滤出最近 N 天的数据
+    -->
+    <select id="countDailyRegister" resultType="java.util.HashMap">
+        SELECT DATE_FORMAT(join_time, '%Y-%m-%d') AS `date`,
+               COUNT(1) AS `count`
+        FROM user_info
+        WHERE DATEDIFF(NOW(), join_time) &lt; #{days}
+        GROUP BY DATE_FORMAT(join_time, '%Y-%m-%d')
+        ORDER BY `date` ASC
+    </select>
+
+</mapper>
