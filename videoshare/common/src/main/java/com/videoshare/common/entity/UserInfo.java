@@ -1,5 +1,5 @@
 // 路径: common/src/main/java/com/videoshare/entity/UserInfo.java
-package com.videoshare.entity;
+package com.videoshare.common.entity;
 
 import java.util.Date;
 
@@ -15,9 +15,7 @@ public class UserInfo {
     private Integer status;         // 账号状态（0禁用/1启用）
     private Integer sex;            // 性别（0男/1女/2保密）
     private Integer theme;          // 主题（界面风格）
-    private Integer totalCoinCount;   // 累计获得硬币数
 
-    // ===== Getter & Setter（省略，实际需要全部生成）=====
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
 
@@ -41,7 +39,4 @@ public class UserInfo {
 
     public Integer getTheme() { return theme; }
     public void setTheme(Integer theme) { this.theme = theme; }
-
-    public Integer getTotalCoinCount() { return totalCoinCount; }
-    public void setTotalCoinCount(Integer totalCoinCount) { this.totalCoinCount = totalCoinCount; }
 }

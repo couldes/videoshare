@@ -1,5 +1,5 @@
 // 路径: common/src/main/java/com/videoshare/enums/UserStatusEnum.java
-package com.videoshare.enums;
+package com.videoshare.common.enums;
 
 public enum UserStatusEnum {
     // 每个枚举项携带一个 status 值

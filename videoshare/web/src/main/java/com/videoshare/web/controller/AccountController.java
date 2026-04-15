@@ -1,10 +1,10 @@
 // 路径: web/src/main/java/com/videoshare/web/controller/AccountController.java
 package com.videoshare.web.controller;
 
-import com.videoshare.exception.BusinessException;
+import com.videoshare.common.exception.BusinessException;
 import com.videoshare.web.component.RedisComponent;
 import com.videoshare.web.service.UserInfoService;
-import com.videoshare.web.vo.ResponseVO;
+import com.videoshare.common.vo.ResponseVO;
 import com.wf.captcha.SpecCaptcha;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +12,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestController
+@RestController//所有方法返回的内容都会自动变成 JSON 给前端
 @RequestMapping("/account")
 public class AccountController extends ABaseController {
 
@@ -29,7 +29,7 @@ public class AccountController extends ABaseController {
      * 获取验证码
      * GET /account/checkCode
      */
-    @GetMapping("/checkCode")
+    @GetMapping("/checkCode")//查数据 → 用 @GetMapping
     public ResponseVO getCheckCode() {
         try {
             SpecCaptcha captcha = new SpecCaptcha(CAPTCHA_WIDTH, CAPTCHA_HEIGHT, 4);
@@ -58,8 +58,7 @@ public class AccountController extends ABaseController {
             @RequestParam String checkCode) {
         try {
             // 参数全部透传，Controller 里零逻辑
-            userInfoService.register(email, nickName, registerPassword,
-                    checkCode, checkCodeKey);
+            userInfoService.register(email, nickName, registerPassword, checkCode, checkCodeKey);
             return getSuccessResponseVO("注册成功");
         } catch (BusinessException e) {
             return getFailureResponseVO(e.getMessage());
@@ -72,9 +71,7 @@ public class AccountController extends ABaseController {
     /**
      * 登录
      * POST /account/login
-     *
-     * Controller 做的事：收参数 → 调Service → 返结果
-     * 没有任何业务判断！全部在 Service 里
+     *收参数 → 调Service → 返结果。业务判断全部在 Service
      */
     @PostMapping("/login")
     public ResponseVO login(
@@ -84,8 +81,7 @@ public class AccountController extends ABaseController {
             @RequestParam String checkCodeKey) {
         try {
             // 一行调用，所有验证逻辑都在 Service 里
-            ResponseVO ResponseVO = userInfoService.login(
-                    email, password, checkCode, checkCodeKey);
+            ResponseVO ResponseVO = userInfoService.login(email, password, checkCode, checkCodeKey);
             return getSuccessResponseVO(ResponseVO);
         } catch (BusinessException e) {
             // Service 抛出的业务异常，直接把消息给用户看

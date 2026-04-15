@@ -1,15 +1,14 @@
 // 路径: common/src/main/java/com/videoshare/utils/StringTools.java
-package com.videoshare.utils;
+package com.videoshare.common.utils;
 
 import java.security.MessageDigest;
 import java.util.Random;
 
 public class StringTools {
 
-    /**
-     * 生成指定长度的随机数字字符串，用作用户ID
-     * 例如：getRandomNumber(10) → "3748291056"
-     */
+
+//生成指定长度的随机数字字符串，用作用户ID
+
     public static String getRandomNumber(Integer length) {
         StringBuilder sb = new StringBuilder();
         Random random = new Random();

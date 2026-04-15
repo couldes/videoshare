@@ -1,5 +1,5 @@
-// 路径: common/src/main/java/com/videoshare/enums/UserSexEnum.java
-package com.videoshare.enums;
+
+package com.videoshare.common.enums;
 
 public enum UserSexEnum {
     MALE(0, "男"),
