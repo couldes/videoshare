@@ -1,0 +1,107 @@
+/* =============================================
+   共用 Element Plus 深色主题覆盖
+   使用 CSS 变量，由各 app 的 theme.css 定义具体色值
+   ============================================= */
+
+/* Input */
+.el-input__wrapper {
+  background-color: var(--bg-input, #1a1a1f) !important;
+  box-shadow: 0 0 0 1px var(--border, rgba(255,255,255,0.07)) !important;
+  border-radius: var(--radius-sm, 6px) !important;
+}
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--border-hover, rgba(255,255,255,0.14)) !important;
+}
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px var(--color-accent, #ff2d55) !important;
+}
+.el-input__inner { color: var(--text-1, #f0f0f2) !important; }
+.el-input__inner::placeholder { color: var(--text-muted, #52525a) !important; }
+
+/* Select */
+.el-select__wrapper {
+  background: var(--bg-input, #1a1a1f) !important;
+  box-shadow: 0 0 0 1px var(--border, rgba(255,255,255,0.07)) !important;
+  border-radius: var(--radius-sm, 6px) !important;
+  color: var(--text-1, #f0f0f2) !important;
+}
+.el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px var(--color-accent, #ff2d55) !important;
+}
+.el-select-dropdown {
+  background: var(--bg-card, #18181c) !important;
+  border-color: var(--border-strong, rgba(255,255,255,0.12)) !important;
+}
+.el-select-dropdown__item { color: var(--text-2, #8a8a96) !important; }
+.el-select-dropdown__item.is-selected { color: var(--color-accent, #ff2d55) !important; }
+.el-select-dropdown__item:hover {
+  background: var(--bg-hover, #1f1f25) !important;
+  color: var(--text-1, #f0f0f2) !important;
+}
+
+/* Button */
+.el-button { font-family: var(--font-body, sans-serif) !important; }
+.el-button--primary {
+  background: var(--color-accent, #ff2d55) !important;
+  border-color: var(--color-accent, #ff2d55) !important;
+  font-weight: 600 !important;
+}
+.el-button--primary:hover {
+  filter: brightness(1.1);
+}
+.el-button--danger {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
+
+/* Form */
+.el-form-item__label { color: var(--text-2, #8a8a96) !important; font-weight: 500 !important; }
+.el-form-item__error { color: #ef4444 !important; }
+
+/* Table */
+.el-table {
+  --el-table-bg-color: transparent !important;
+  --el-table-tr-bg-color: transparent !important;
+  --el-table-header-bg-color: var(--bg-panel, #1a1c22) !important;
+  --el-table-row-hover-bg-color: var(--bg-hover, #1f1f25) !important;
+  --el-table-border-color: var(--border, rgba(255,255,255,0.07)) !important;
+  --el-table-text-color: var(--text-1, #f0f0f2) !important;
+  --el-table-header-text-color: var(--text-2, #8a8a96) !important;
+  background: transparent !important;
+}
+.el-table th.el-table__cell {
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+.el-table td.el-table__cell { border-bottom-color: var(--border) !important; }
+.el-table::before { display: none !important; }
+
+/* Pagination */
+.el-pagination.is-background .el-pager li {
+  background: var(--bg-panel, #1a1c22) !important;
+  border: 1px solid var(--border, rgba(255,255,255,0.07)) !important;
+  color: var(--text-2, #8a8a96) !important;
+  border-radius: var(--radius-sm, 5px) !important;
+}
+.el-pagination.is-background .el-pager li.is-active {
+  background: var(--color-accent, #ff2d55) !important;
+  border-color: var(--color-accent, #ff2d55) !important;
+  color: #fff !important;
+}
+
+/* Tag */
+.el-tag {
+  font-size: 11px !important;
+  border-radius: 3px !important;
+  font-weight: 500 !important;
+}
+
+/* MessageBox */
+.el-message-box {
+  background: var(--bg-card, #18181c) !important;
+  border-color: var(--border-strong, rgba(255,255,255,0.12)) !important;
+}
+.el-message-box__title   { color: var(--text-1, #f0f0f2) !important; }
+.el-message-box__content { color: var(--text-2, #8a8a96) !important; }

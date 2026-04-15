@@ -1,0 +1,54 @@
+/* =============================================
+   Web 端专属主题变量（红色调）
+   覆盖 element-theme.css 中的 --color-accent 等
+   ============================================= */
+:root {
+  /* 品牌色 */
+  --color-accent:      #ff2d55;
+  --color-accent-dim:  rgba(255, 45, 85, 0.15);
+
+  /* 背景层级 */
+  --bg-base:    #0a0a0c;
+  --bg-surface: #111114;
+  --bg-card:    #18181c;
+  --bg-hover:   #1f1f25;
+  --bg-input:   #1a1a1f;
+  --bg-panel:   #18181c;
+
+  /* 边框 */
+  --border:        rgba(255,255,255,0.07);
+  --border-hover:  rgba(255,255,255,0.14);
+  --border-strong: rgba(255,255,255,0.12);
+
+  /* 文字 */
+  --text-1:    #f0f0f2;
+  --text-2:    #8a8a96;
+  --text-muted:#52525a;
+
+  /* 字体 */
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* 阴影 */
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+
+  /* 过渡 */
+  --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-1);
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(255,45,85,0.06) 0%,
+    transparent 60%
+  );
+}

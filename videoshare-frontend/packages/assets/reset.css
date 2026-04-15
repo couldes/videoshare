@@ -1,0 +1,14 @@
+/* =============================================
+   共用 CSS Reset
+   两个 app 的 main.js 都 import 这个文件
+   ============================================= */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; scroll-behavior: smooth; }
+body { line-height: 1.6; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+/* 统一滚动条（两端都是深色背景）*/
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
