@@ -85,9 +85,11 @@
       返回：[{ "status": 0, "count": 5 }, { "status": 1, "count": 95 }]
     -->
     <select id="countByStatus" resultType="java.util.HashMap">
-        SELECT status, COUNT(1) AS `count`
-        FROM user_info
-        GROUP BY status
+        SELECT 0 AS `status`,
+        IFNULL((SELECT COUNT(1) FROM user_info WHERE status = 0), 0) AS `count`
+        UNION ALL
+        SELECT 1 AS `status`,
+        IFNULL((SELECT COUNT(1) FROM user_info WHERE status = 1), 0) AS `count`
     </select>
 
     <!--
@@ -97,7 +99,7 @@
     -->
     <select id="countDailyRegister" resultType="java.util.HashMap">
         SELECT DATE_FORMAT(join_time, '%Y-%m-%d') AS `date`,
-               COUNT(1) AS `count`
+        IFNULL(COUNT(1), 0) AS `count`
         FROM user_info
         WHERE DATEDIFF(NOW(), join_time) &lt; #{days}
         GROUP BY DATE_FORMAT(join_time, '%Y-%m-%d')
