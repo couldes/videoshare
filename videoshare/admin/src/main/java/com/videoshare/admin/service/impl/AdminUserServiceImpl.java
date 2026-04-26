@@ -23,7 +23,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     //  分页查询用户列表
     // 
     @Override
-    public PaginationResultVO<UserInfoVO> getUserList(UserInfoQuery query) {
+    public PaginationResultVO<UserInfoVO> getUserList(UserInfoQuery query) {//泛型用<>收参数
 
         // 1. 查当前页数据（SQL: SELECT ... LIMIT ? OFFSET ?）
         List<UserInfo> userList = adminUserMapper.selectUserList(query);
@@ -77,8 +77,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
 
-        // ① 按状态统计用户数
-        // 返回：[{ status: 1, count: 95 }, { status: 0, count: 5 }]
+        // ① 修复：使用 UNION ALL 保证始终返回两行，避免 NPE
         List<Map<String, Object>> statusCounts = adminUserMapper.countByStatus();
 
         int totalUsers    = 0;
@@ -86,8 +85,13 @@ public class AdminUserServiceImpl implements AdminUserService {
         int disabledUsers = 0;
 
         for (Map<String, Object> row : statusCounts) {
-            int s = ((Number) row.get("status")).intValue();
-            int c = ((Number) row.get("count")).intValue();
+            // 修复：Object → Number 转换加 null 检查，兼容 MySQL 返回 Long/Integer
+            Object statusObj = row.get("status");
+            Object countObj  = row.get("count");
+            if (statusObj == null || countObj == null) continue;
+
+            int s = ((Number) statusObj).intValue();
+            int c = ((Number) countObj).intValue();
             totalUsers += c;
             if (s == 1) activeUsers   = c;
             if (s == 0) disabledUsers = c;
@@ -97,8 +101,13 @@ public class AdminUserServiceImpl implements AdminUserService {
         stats.put("activeUsers",   activeUsers);
         stats.put("disabledUsers", disabledUsers);
 
-        // ② 最近7天每天新增用户数（用于折线图）
+        // ② 最近7天注册折线数据
         List<Map<String, Object>> daily = adminUserMapper.countDailyRegister(7);
+        // 修复：确保 count 字段统一为 Integer，防止前端图表解析失败
+        for (Map<String, Object> row : daily) {
+            Object c = row.get("count");
+            if (c != null) row.put("count", ((Number) c).intValue());
+        }
         stats.put("dailyRegister", daily);
 
         return stats;
