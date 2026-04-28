@@ -12,8 +12,8 @@ spring:
   # 文件上传配置
   servlet:
     multipart:
-      max-file-size: 50MB      # 考虑到视频分享，建议调大一点
-      max-request-size: 50MB
+      max-file-size: 500MB
+      max-request-size: 500MB
 
   # 数据库配置
   datasource:
