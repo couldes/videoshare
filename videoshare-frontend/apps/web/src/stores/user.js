@@ -17,7 +17,6 @@ export const useUserStore = defineStore('user', () => {
 
   const isLoggedIn = computed(() => !!token.value)
   const nickName   = computed(() => userInfo.value?.nickName || '')
-  const coinCount  = computed(() => userInfo.value?.currentCoinCount || 0)
 
   /**
    * 登录成功后调用
@@ -37,5 +36,5 @@ export const useUserStore = defineStore('user', () => {
     auth.clear()
   }
 
-  return { userInfo, token, isLoggedIn, nickName, coinCount, setLoginInfo, logout }
+  return { userInfo, token, isLoggedIn, nickName, setLoginInfo, logout }
 })

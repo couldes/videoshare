@@ -49,6 +49,19 @@ export function formatRelative(date) {
 }
 
 /**
+ * 格式化文件大小
+ * @param {number} bytes
+ * @returns {string}
+ * @example formatFileSize(1024) // '1.00 KB'
+ */
+export function formatFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2)} ${units[i]}`
+}
+
+/**
  * 格式化视频时长（秒 → MM:SS 或 HH:MM:SS）
  * @example formatDuration(225) // '3:45'
  */
