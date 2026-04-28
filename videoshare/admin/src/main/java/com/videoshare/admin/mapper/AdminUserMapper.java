@@ -8,16 +8,9 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-/**
- * 管理端用户数据库操作接口
- *
- * 与 web 模块的 UserInfoMapper 分开，职责不同：
- *   UserInfoMapper（web）：面向用户自身操作（注册、登录）
- *   AdminUserMapper（admin）：面向管理员的批量操作（列表、统计、状态管理）
- *
- * 两个 Mapper 操作的是同一张 user_info 表，但查询维度不同。
- * SQL 写在对应的 XML 文件里（AdminUserMapper.xml）
- */
+
+//两个 Mapper 操作的是同一张 user_info 表，但查询维度不同。
+
 @Mapper
 public interface AdminUserMapper {
 

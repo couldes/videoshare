@@ -7,10 +7,7 @@ import com.videoshare.common.vo.PaginationResultVO;
 
 import java.util.Map;
 
-/**
- * Admin 用户管理 Service 接口
- * 定义管理员能对用户做哪些操作
- */
+
 public interface AdminUserService {
 
     /** 分页查询用户列表 */
