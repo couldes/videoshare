@@ -11,7 +11,7 @@ import java.util.Map;
 public interface VideoService {
     PaginationResultVO<VideoInfoVO> getVideoList(VideoQuery query);
     VideoInfoVO getVideoDetail(String videoId, String currentUserId);
-    String uploadVideoFile(MultipartFile file, String userId);
+    Map<String, Object> uploadVideoFile(MultipartFile file, String userId);
     void publishVideo(String userId, String title, String description,
                       String coverUrl, String videoUrl, String category, String tags);
     PaginationResultVO<VideoInfoVO> getUserVideos(String userId, Integer pageNum, Integer pageSize);
