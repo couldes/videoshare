@@ -104,7 +104,7 @@ public class VideoServiceImpl implements VideoService {
 
         // 返回前端期望的 { videoUrl, duration } 格式
         Map<String, Object> result = new HashMap<>();
-        result.put("videoUrl", "http://localhost:8080/videos/" + fileName);
+        result.put("videoUrl", "/video/resource/" + fileName);
         result.put("duration", 0);
         return result;
     }
