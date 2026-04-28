@@ -15,6 +15,7 @@ public class UserInfo {
     private Integer status;         // 账号状态（0禁用/1启用）
     private Integer sex;            // 性别（0男/1女/2保密）
     private Integer theme;          // 主题（界面风格）
+    private String bio;
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
@@ -39,4 +40,7 @@ public class UserInfo {
 
     public Integer getTheme() { return theme; }
     public void setTheme(Integer theme) { this.theme = theme; }
+
+    public String getBio()        { return bio; }
+    public void   setBio(String v){ this.bio = v; }
 }

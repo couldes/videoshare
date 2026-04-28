@@ -23,4 +23,19 @@
         DELETE FROM user_info WHERE nick_name = #{nickName}
     </delete>
 
+    <!-- 按 userId 查询（AccountController 登录后鉴权时用到）-->
+    <select id="selectByUserId" resultMap="UserInfoMap">
+        SELECT * FROM user_info WHERE user_id = #{userId}
+    </select>
+
+    <!-- 更新个人资料（只更新非 null 字段）-->
+    <update id="updateProfile">
+        UPDATE user_info
+        <set>
+            <if test="bio != null">bio = #{bio},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
 </mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  路径: web/src/main/resources/mapper/UserActionMapper.xml
+-->
+<mapper namespace="com.videoshare.web.mapper.UserActionMapper">
+
+    <!--
+      INSERT IGNORE：遇到 unique key (user_id, target_id, action_type) 冲突时
+      直接忽略（不报错），避免"重复点赞"问题
+    -->
+    <insert id="insert">
+        INSERT IGNORE INTO user_action (user_id, target_id, action_type, create_time)
+        VALUES (#{userId}, #{targetId}, #{actionType}, NOW())
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM user_action
+        WHERE user_id = #{userId}
+        AND target_id = #{targetId}
+        AND action_type = #{actionType}
+    </delete>
+
+    <select id="checkAction" resultType="Integer">
+        SELECT COUNT(1) FROM user_action
+        WHERE user_id = #{userId}
+        AND target_id = #{targetId}
+        AND action_type = #{actionType}
+    </select>
+
+    <!--
+      收藏夹：查出用户收藏的视频ID列表（再回查 video_info 表获取完整信息）
+      按收藏时间倒序
+    -->
+    <select id="selectFavoriteVideoIds" resultType="String">
+        SELECT target_id FROM user_action
+        WHERE user_id = #{userId} AND action_type = 2
+        ORDER BY create_time DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="countFavorites" resultType="Integer">
+        SELECT COUNT(1) FROM user_action
+        WHERE user_id = #{userId} AND action_type = 2
+    </select>
+
+</mapper>

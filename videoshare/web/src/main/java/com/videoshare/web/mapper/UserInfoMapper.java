@@ -21,4 +21,12 @@ public interface UserInfoMapper {
 
     // 根据昵称删除用户
     Integer deleteByNickName(@Param("nickName") String nickName);
+
+    //按用户ID查询
+    UserInfo selectByUserId(@Param("userId") String userId);
+
+    // 更新个人简介和头像
+    Integer updateProfile(@Param("userId")    String userId,
+                          @Param("bio")       String bio,
+                          @Param("avatarUrl") String avatarUrl);
 }
