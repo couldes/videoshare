@@ -13,6 +13,7 @@ import com.videoshare.web.mapper.UserActionMapper;
 import com.videoshare.web.mapper.UserInfoMapper;
 import com.videoshare.web.mapper.VideoInfoMapper;
 import com.videoshare.web.service.VideoService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,9 +27,15 @@ import java.util.stream.Collectors;
 @Service
 public class VideoServiceImpl implements VideoService {
 
-    /** 视频文件存储根路径（实际项目请替换为 OSS/MinIO） */
-    private static final String VIDEO_UPLOAD_DIR = "/data/videoshare/videos/";
-    private static final String VIDEO_BASE_URL   = "http://localhost:8080/videos/";
+    /** 视频文件存储根路径（从 application.yml project.folder 读取） */
+    @Value("${project.folder:d:/webser/videoshare/}")
+    private String projectFolder;
+
+    private String getUploadDir() {
+        return projectFolder.endsWith("/") || projectFolder.endsWith("\\")
+                ? projectFolder + "videos/"
+                : projectFolder + "/videos/";
+    }
 
     @Resource private VideoInfoMapper  videoInfoMapper;
     @Resource private UserInfoMapper   userInfoMapper;
@@ -78,7 +85,7 @@ public class VideoServiceImpl implements VideoService {
     //  上传视频文件（简化版，生产环境替换为 OSS）
     // ============================================================
     @Override
-    public String uploadVideoFile(MultipartFile file, String userId) {
+    public Map<String, Object> uploadVideoFile(MultipartFile file, String userId) {
         String originalName = file.getOriginalFilename();
         String ext = originalName != null && originalName.contains(".")
                 ? originalName.substring(originalName.lastIndexOf("."))
@@ -86,7 +93,7 @@ public class VideoServiceImpl implements VideoService {
 
         // 生成唯一文件名，防止覆盖
         String fileName = userId + "_" + System.currentTimeMillis() + ext;
-        File dest = new File(VIDEO_UPLOAD_DIR + fileName);
+        File dest = new File(getUploadDir() + fileName);
         dest.getParentFile().mkdirs();
 
         try {
@@ -94,7 +101,12 @@ public class VideoServiceImpl implements VideoService {
         } catch (IOException e) {
             throw new BusinessException("视频上传失败，请重试");
         }
-        return VIDEO_BASE_URL + fileName;
+
+        // 返回前端期望的 { videoUrl, duration } 格式
+        Map<String, Object> result = new HashMap<>();
+        result.put("videoUrl", "http://localhost:8080/videos/" + fileName);
+        result.put("duration", 0);
+        return result;
     }
 
     // ============================================================
