@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  路径: admin/src/main/resources/mapper/AdminVideoMapper.xml
+-->
+<mapper namespace="com.videoshare.admin.mapper.AdminVideoMapper">
+
+    <resultMap id="VideoMap" type="com.videoshare.common.entity.VideoInfo">
+        <id     column="video_id"       property="videoId"/>
+        <result column="user_id"        property="userId"/>
+        <result column="title"          property="title"/>
+        <result column="cover_url"      property="coverUrl"/>
+        <result column="video_url"      property="videoUrl"/>
+        <result column="duration"       property="duration"/>
+        <result column="category"       property="category"/>
+        <result column="view_count"     property="viewCount"/>
+        <result column="like_count"     property="likeCount"/>
+        <result column="comment_count"  property="commentCount"/>
+        <result column="favorite_count" property="favoriteCount"/>
+        <result column="status"         property="status"/>
+        <result column="create_time"    property="createTime"/>
+    </resultMap>
+
+    <!-- 管理端 WHERE：不默认限制 status，支持查所有状态 -->
+    <sql id="adminWhere">
+        <where>
+            <if test="status != null">AND v.status = #{status}</if>
+            <if test="category != null">AND v.category = #{category}</if>
+            <if test="userId != null">AND v.user_id = #{userId}</if>
+            <if test="keyword != null">
+                AND (v.title LIKE CONCAT('%', #{keyword}, '%')
+                OR v.tags  LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectVideoList" resultMap="VideoMap">
+        SELECT v.*, u.nick_name AS nick_name
+        FROM video_info v
+        LEFT JOIN user_info u ON v.user_id = u.user_id
+        <include refid="adminWhere"/>
+        ORDER BY v.create_time DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="countVideos" resultType="Integer">
+        SELECT COUNT(1) FROM video_info v
+        <include refid="adminWhere"/>
+    </select>
+
+    <update id="updateStatus">
+        UPDATE video_info SET status = #{status} WHERE video_id = #{videoId}
+    </update>
+
+    <delete id="deleteByVideoId">
+        DELETE FROM video_info WHERE video_id = #{videoId}
+    </delete>
+
+    <!-- 各状态视频数（保证每个状态都有记录）-->
+    <select id="countByStatus" resultType="java.util.HashMap">
+        SELECT 0 AS `status`, IFNULL((SELECT COUNT(1) FROM video_info WHERE status=0),0) AS `count`
+        UNION ALL
+        SELECT 1 AS `status`, IFNULL((SELECT COUNT(1) FROM video_info WHERE status=1),0) AS `count`
+        UNION ALL
+        SELECT 2 AS `status`, IFNULL((SELECT COUNT(1) FROM video_info WHERE status=2),0) AS `count`
+    </select>
+
+    <!-- 近 N 天每日发布数 -->
+    <select id="countDailyPublish" resultType="java.util.HashMap">
+        SELECT DATE_FORMAT(create_time, '%Y-%m-%d') AS `date`,
+        IFNULL(COUNT(1), 0) AS `count`
+        FROM video_info
+        WHERE DATEDIFF(NOW(), create_time) &lt; #{days}
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY `date` ASC
+    </select>
+
+</mapper>

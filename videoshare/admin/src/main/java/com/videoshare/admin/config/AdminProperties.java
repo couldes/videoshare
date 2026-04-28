@@ -5,9 +5,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 
-//读取 application.yml 中 admin.* 配置项
-//@ConfigurationProperties(prefix = "admin")
-//会自动把 yml 里 admin.account / admin.password 注入到字段里
 @Component
 @ConfigurationProperties(prefix = "admin")
 public class AdminProperties {

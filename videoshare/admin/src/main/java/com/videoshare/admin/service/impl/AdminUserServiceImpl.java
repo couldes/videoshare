@@ -77,7 +77,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
 
-        // ① 修复：使用 UNION ALL 保证始终返回两行，避免 NPE
+        // 修复：使用 UNION ALL 保证始终返回两行，避免空指针异常
         List<Map<String, Object>> statusCounts = adminUserMapper.countByStatus();
 
         int totalUsers    = 0;
