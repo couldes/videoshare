@@ -52,4 +52,5 @@ public class RedisComponent {
     public String getUserIdByToken(String token) {
         return stringRedisTemplate.opsForValue().get(TOKEN_PREFIX + token);
     }
+
 }

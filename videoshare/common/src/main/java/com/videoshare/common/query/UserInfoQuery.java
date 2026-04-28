@@ -22,6 +22,7 @@ public class UserInfoQuery {
 
     //  Getters & Setters 
     public Integer getPageNum()  { return pageNum; }
+
     public void setPageNum(Integer pageNum) {
         // 页码至少为1，防止前端传0或负数
         this.pageNum = (pageNum == null || pageNum < 1) ? 1 : pageNum;
@@ -37,6 +38,7 @@ public class UserInfoQuery {
     }
 
     public String getKeyword()   { return keyword; }
+
     public void setKeyword(String keyword) {
         // 空字符串当作 null 处理
         this.keyword = (keyword != null && keyword.trim().isEmpty()) ? null : keyword;

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  路径: web/src/main/resources/mapper/VideoInfoMapper.xml
+-->
+<mapper namespace="com.videoshare.web.mapper.VideoInfoMapper">
+
+    <resultMap id="VideoInfoMap" type="com.videoshare.common.entity.VideoInfo">
+        <id     column="video_id"       property="videoId"/>
+        <result column="user_id"        property="userId"/>
+        <result column="title"          property="title"/>
+        <result column="description"    property="description"/>
+        <result column="cover_url"      property="coverUrl"/>
+        <result column="video_url"      property="videoUrl"/>
+        <result column="duration"       property="duration"/>
+        <result column="category"       property="category"/>
+        <result column="tags"           property="tags"/>
+        <result column="view_count"     property="viewCount"/>
+        <result column="like_count"     property="likeCount"/>
+        <result column="comment_count"  property="commentCount"/>
+        <result column="favorite_count" property="favoriteCount"/>
+        <result column="status"         property="status"/>
+        <result column="create_time"    property="createTime"/>
+        <result column="update_time"    property="updateTime"/>
+    </resultMap>
+
+    <!-- 公共查询条件片段 -->
+    <sql id="whereClause">
+        <where>
+            <!-- 默认只查已发布的，传 status 可覆盖（admin 用）-->
+            <if test="status != null">
+                AND v.status = #{status}
+            </if>
+            <if test="status == null">
+                AND v.status = 1
+            </if>
+            <if test="category != null">
+                AND v.category = #{category}
+            </if>
+            <if test="userId != null">
+                AND v.user_id = #{userId}
+            </if>
+            <if test="keyword != null">
+                AND (v.title LIKE CONCAT('%', #{keyword}, '%')
+                OR v.tags   LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </sql>
+
+    <!-- 排序片段 -->
+    <sql id="orderByClause">
+        <choose>
+            <when test="orderBy == 'view_count'">ORDER BY v.view_count DESC</when>
+            <when test="orderBy == 'like_count'">ORDER BY v.like_count DESC</when>
+            <otherwise>ORDER BY v.create_time DESC</otherwise>
+        </choose>
+    </sql>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.videoshare.common.entity.VideoInfo">
+        INSERT INTO video_info
+        (video_id, user_id, title, description, cover_url, video_url,
+        duration, category, tags, view_count, like_count, comment_count,
+        favorite_count, status, create_time)
+        VALUES
+        (#{videoId}, #{userId}, #{title}, #{description}, #{coverUrl}, #{videoUrl},
+        #{duration}, #{category}, #{tags}, 0, 0, 0,
+        0, #{status}, NOW())
+    </insert>
+
+    <!-- 分页查询 -->
+    <select id="selectVideoList" resultMap="VideoInfoMap">
+        SELECT v.*
+        FROM video_info v
+        <include refid="whereClause"/>
+        <include refid="orderByClause"/>
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <!-- 计数 -->
+    <select id="countVideos" resultType="Integer">
+        SELECT COUNT(1) FROM video_info v
+        <include refid="whereClause"/>
+    </select>
+
+    <!-- 按ID查询 -->
+    <select id="selectByVideoId" resultMap="VideoInfoMap">
+        SELECT * FROM video_info WHERE video_id = #{videoId}
+    </select>
+
+    <!-- 播放量 +1 -->
+    <update id="increaseViewCount">
+        UPDATE video_info SET view_count = view_count + 1 WHERE video_id = #{videoId}
+    </update>
+
+    <!-- 点赞数调整 -->
+    <update id="updateLikeCount">
+        UPDATE video_info
+        SET like_count = GREATEST(0, like_count + #{count})
+        WHERE video_id = #{videoId}
+    </update>
+
+    <!-- 收藏数调整 -->
+    <update id="updateFavoriteCount">
+        UPDATE video_info
+        SET favorite_count = GREATEST(0, favorite_count + #{count})
+        WHERE video_id = #{videoId}
+    </update>
+
+    <!-- 评论数调整 -->
+    <update id="updateCommentCount">
+        UPDATE video_info
+        SET comment_count = GREATEST(0, comment_count + #{count})
+        WHERE video_id = #{videoId}
+    </update>
+
+    <!-- 状态修改 -->
+    <update id="updateStatus">
+        UPDATE video_info SET status = #{status} WHERE video_id = #{videoId}
+    </update>
+
+    <!-- 按用户统计视频数 -->
+    <select id="countByUserId" resultType="Long">
+        SELECT COUNT(1) FROM video_info WHERE user_id = #{userId} AND status = 1
+    </select>
+
+    <!-- 按用户统计被点赞总数 -->
+    <select id="sumLikeCountByUserId" resultType="Long">
+        SELECT IFNULL(SUM(like_count), 0)
+        FROM video_info
+        WHERE user_id = #{userId} AND status = 1
+    </select>
+
+</mapper>

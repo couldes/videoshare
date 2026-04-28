@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  路径: web/src/main/resources/mapper/UserFollowMapper.xml
+-->
+<mapper namespace="com.videoshare.web.mapper.UserFollowMapper">
+
+    <insert id="insert">
+        INSERT IGNORE INTO user_follow (user_id, follow_user_id, create_time)
+        VALUES (#{userId}, #{followUserId}, NOW())
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM user_follow
+        WHERE user_id = #{userId} AND follow_user_id = #{followUserId}
+    </delete>
+
+    <select id="checkFollow" resultType="Integer">
+        SELECT COUNT(1) FROM user_follow
+        WHERE user_id = #{userId} AND follow_user_id = #{followUserId}
+    </select>
+
+    <select id="countFollowers" resultType="Long">
+        SELECT COUNT(1) FROM user_follow WHERE follow_user_id = #{userId}
+    </select>
+
+    <select id="countFollowing" resultType="Long">
+        SELECT COUNT(1) FROM user_follow WHERE user_id = #{userId}
+    </select>
+
+</mapper>

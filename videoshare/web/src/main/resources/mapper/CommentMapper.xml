@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  路径: web/src/main/resources/mapper/CommentMapper.xml
+-->
+<mapper namespace="com.videoshare.web.mapper.CommentMapper">
+
+    <resultMap id="CommentMap" type="com.videoshare.common.entity.CommentInfo">
+        <id     column="comment_id"    property="commentId"/>
+        <result column="video_id"      property="videoId"/>
+        <result column="user_id"       property="userId"/>
+        <result column="p_comment_id"  property="pCommentId"/>
+        <result column="reply_user_id" property="replyUserId"/>
+        <result column="content"       property="content"/>
+        <result column="like_count"    property="likeCount"/>
+        <result column="top_type"      property="topType"/>
+        <result column="status"        property="status"/>
+        <result column="create_time"   property="createTime"/>
+    </resultMap>
+
+    <!-- 插入评论 -->
+    <insert id="insert" parameterType="com.videoshare.common.entity.CommentInfo"
+            useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO comment_info
+        (video_id, user_id, p_comment_id, reply_user_id, content, like_count, top_type, status, create_time)
+        VALUES
+        (#{videoId}, #{userId}, #{pCommentId}, #{replyUserId}, #{content}, 0, 0, 1, NOW())
+    </insert>
+
+    <!-- 分页查顶级评论（置顶在前，再按时间倒序）-->
+    <select id="selectTopComments" resultMap="CommentMap">
+        SELECT * FROM comment_info
+        WHERE video_id = #{videoId}
+        AND p_comment_id = 0
+        <if test="status != null">AND status = #{status}</if>
+        <if test="status == null">AND status = 1</if>
+        ORDER BY top_type DESC, create_time DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <!-- 顶级评论计数 -->
+    <select id="countTopComments" resultType="Integer">
+        SELECT COUNT(1) FROM comment_info
+        WHERE video_id = #{videoId}
+        AND p_comment_id = 0
+        <if test="status != null">AND status = #{status}</if>
+        <if test="status == null">AND status = 1</if>
+    </select>
+
+    <!-- 某顶级评论的全部回复（按时间正序） -->
+    <select id="selectReplies" resultMap="CommentMap">
+        SELECT * FROM comment_info
+        WHERE p_comment_id = #{pCommentId}
+        <if test="status != null">AND status = #{status}</if>
+        <if test="status == null">AND status = 1</if>
+        ORDER BY create_time ASC
+    </select>
+
+    <!-- 按 ID 查单条 -->
+    <select id="selectByCommentId" resultMap="CommentMap">
+        SELECT * FROM comment_info WHERE comment_id = #{commentId}
+    </select>
+
+    <!-- 修改状态（逻辑删除 status=2）-->
+    <update id="updateStatus">
+        UPDATE comment_info SET status = #{status} WHERE comment_id = #{commentId}
+    </update>
+
+    <!-- 点赞数 ±1，GREATEST(0,...) 防止负数 -->
+    <update id="updateLikeCount">
+        UPDATE comment_info
+        SET like_count = GREATEST(0, like_count + #{count})
+        WHERE comment_id = #{commentId}
+    </update>
+
+</mapper>
