@@ -22,10 +22,20 @@ function createBaseConfig(appDir) {
         '@': resolve(appDir, 'src'),
 
         // 共享包直接指向源码，Vite 的 alias 会拦截 import 路径
-        '@videoshare/api':       resolve(appDir, '../../packages/api/src'),
-        '@videoshare/utils':     resolve(appDir, '../../packages/utils/src'),
-        '@videoshare/constants': resolve(appDir, '../../packages/constants/src'),
-        '@videoshare/assets':    resolve(appDir, '../../packages/assets')
+        '@videoshare/api':                resolve(appDir, '../../packages/api/src'),
+        '@videoshare/api/request':        resolve(appDir, '../../packages/api/src/request.js'),
+        '@videoshare/api/account':        resolve(appDir, '../../packages/api/src/account.js'),
+        '@videoshare/api/video':          resolve(appDir, '../../packages/api/src/video.js'),
+        '@videoshare/api/comment':        resolve(appDir, '../../packages/api/src/comment.js'),
+        '@videoshare/api/profile':        resolve(appDir, '../../packages/api/src/profile.js'),
+        '@videoshare/api/admin/account':  resolve(appDir, '../../packages/api/src/admin/account.js'),
+        '@videoshare/api/admin/user':     resolve(appDir, '../../packages/api/src/admin/user.js'),
+        '@videoshare/utils':              resolve(appDir, '../../packages/utils/src'),
+        '@videoshare/utils/auth':         resolve(appDir, '../../packages/utils/src/auth.js'),
+        '@videoshare/utils/format':       resolve(appDir, '../../packages/utils/src/format.js'),
+        '@videoshare/utils/validate':     resolve(appDir, '../../packages/utils/src/validate.js'),
+        '@videoshare/constants':          resolve(appDir, '../../packages/constants/src/index.js'),
+        '@videoshare/assets':             resolve(appDir, '../../packages/assets')
       }
     }
   }
