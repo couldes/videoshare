@@ -59,7 +59,7 @@ mybatis:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境下在控制台打印 SQL
   # 必须指定 Mapper.xml 的位置，否则会报之前日志里的 "No MyBatis mapper found"
   mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.videoshare.admin.entity # 实体类包路径
+  type-aliases-package: com.videoshare.common.entity
 
 # 日志配置（注意：Spring 标准写法是 logging.level）
 logging:
