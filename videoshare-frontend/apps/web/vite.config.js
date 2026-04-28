@@ -9,9 +9,10 @@ module.exports = mergeConfig(
       port: 3000,
       proxy: {
         // 用户端接口代理到后端 8080
-        '/account': { target: 'http://localhost:7075', changeOrigin: true },
-        '/video':   { target: 'http://localhost:7075', changeOrigin: true },
-        '/user':    { target: 'http://localhost:7075', changeOrigin: true }
+        '/account':  { target: 'http://localhost:7075', changeOrigin: true },
+        '/video':    { target: 'http://localhost:7075', changeOrigin: true },
+        '/user':     { target: 'http://localhost:7075', changeOrigin: true },
+        '/comment':  { target: 'http://localhost:7075', changeOrigin: true }
       }
     }
   }
