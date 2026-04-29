@@ -7,6 +7,9 @@ const routes = [
   { path: '/login',    name: 'Login',    component: () => import('@/views/Login.vue'),         meta: { title: '登录',  guestOnly: true } },
   { path: '/register', name: 'Register', component: () => import('@/views/Register.vue'),      meta: { title: '注册',  guestOnly: true } },
 
+  // 搜索页（未登录也能看）
+  { path: '/search', name: 'Search', component: () => import('@/views/Search.vue'), meta: { title: '搜索' } },
+
   // 视频播放页（未登录也能看）
   { path: '/video/:videoId', name: 'VideoPlay',   component: () => import('@/views/VideoPlay.vue'),  meta: { title: '视频播放' } },
 
@@ -14,6 +17,7 @@ const routes = [
   { path: '/user/:userId',   name: 'UserProfile', component: () => import('@/views/UserProfile.vue'), meta: { title: '个人主页' } },
 
   // 需要登录的页面
+  { path: '/history',  name: 'History',  component: () => import('@/views/History.vue'),       meta: { title: '观看历史', requiresAuth: true } },
   { path: '/upload',   name: 'Upload',   component: () => import('@/views/Upload.vue'),        meta: { title: '发布视频', requiresAuth: true } },
   { path: '/favorites',name: 'Favorites',component: () => import('@/views/Favorites.vue'),     meta: { title: '我的收藏', requiresAuth: true } },
 

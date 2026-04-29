@@ -228,6 +228,7 @@ import NavBar from '@/components/NavBar.vue'
 import { useUserStore } from '@/stores/user'
 import { videoApi, commentApi, profileApi } from '@/api'
 import { formatViews, formatRelative } from '@videoshare/utils/format'
+import { addHistory } from '@videoshare/utils/history'
 
 const route     = useRoute()
 const router    = useRouter()
@@ -328,7 +329,7 @@ function loadRecommend() {
 
 // ===== 交互处理 =====
 function onPlay() {
-  // 实际项目可在此埋点
+  if (video.value) addHistory(video.value)
 }
 function onEnded() {
   // 播放结束后自动播放推荐
