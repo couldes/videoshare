@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoshare.admin.mapper.UserFollowMapper">
+
+    <select id="selectFollowing" resultType="java.util.HashMap">
+        SELECT f.*, u.nick_name AS follow_nick_name
+        FROM user_follow f
+        LEFT JOIN user_info u ON f.follow_user_id = u.user_id
+        WHERE f.user_id = #{userId}
+        ORDER BY f.create_time DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="selectFollowers" resultType="java.util.HashMap">
+        SELECT f.*, u.nick_name AS follower_nick_name
+        FROM user_follow f
+        LEFT JOIN user_info u ON f.user_id = u.user_id
+        WHERE f.follow_user_id = #{userId}
+        ORDER BY f.create_time DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="countFollowing" resultType="Long">
+        SELECT COUNT(1) FROM user_follow WHERE user_id = #{userId}
+    </select>
+
+    <select id="countFollowers" resultType="Long">
+        SELECT COUNT(1) FROM user_follow WHERE follow_user_id = #{userId}
+    </select>
+
+    <delete id="delete">
+        DELETE FROM user_follow
+        WHERE user_id = #{userId} AND follow_user_id = #{followUserId}
+    </delete>
+
+</mapper>

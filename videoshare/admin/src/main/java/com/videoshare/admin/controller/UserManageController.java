@@ -75,11 +75,11 @@ public class UserManageController extends ABaseController {
         }
     }
 
-    // 
+    //
     //  Dashboard 统计
     //  GET /admin/user/dashboard
     //  返回：{ totalUsers, activeUsers, disabledUsers, dailyRegister:[...] }
-    // 
+    //
     @GetMapping("/dashboard")
     public ResponseVO<Map<String, Object>> getDashboard() {
         try {
@@ -87,6 +87,40 @@ public class UserManageController extends ABaseController {
             return success(stats);
         } catch (Exception e) {
             return error("获取统计数据失败");
+        }
+    }
+
+    //
+    //  用户操作记录（点赞/收藏）
+    //  GET /admin/user/{userId}/actions
+    //
+    @GetMapping("/{userId}/actions")
+    public ResponseVO<Map<String, Object>> getUserActions(
+            @PathVariable String userId,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        try {
+            Map<String, Object> actions = adminUserService.getUserActions(userId, pageNum, pageSize);
+            return success(actions);
+        } catch (Exception e) {
+            return error("获取用户操作记录失败");
+        }
+    }
+
+    //
+    //  用户关注/粉丝列表
+    //  GET /admin/user/{userId}/follows
+    //
+    @GetMapping("/{userId}/follows")
+    public ResponseVO<Map<String, Object>> getUserFollows(
+            @PathVariable String userId,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        try {
+            Map<String, Object> follows = adminUserService.getUserFollows(userId, pageNum, pageSize);
+            return success(follows);
+        } catch (Exception e) {
+            return error("获取用户关注列表失败");
         }
     }
 }

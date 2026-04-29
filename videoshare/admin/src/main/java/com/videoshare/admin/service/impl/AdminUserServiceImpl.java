@@ -2,6 +2,8 @@
 package com.videoshare.admin.service.impl;
 
 import com.videoshare.admin.mapper.AdminUserMapper;
+import com.videoshare.admin.mapper.UserActionMapper;
+import com.videoshare.admin.mapper.UserFollowMapper;
 import com.videoshare.admin.service.AdminUserService;
 import com.videoshare.common.vo.UserInfoVO;
 import com.videoshare.common.query.UserInfoQuery;
@@ -18,6 +20,10 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Resource
     private AdminUserMapper adminUserMapper;
+    @Resource
+    private UserActionMapper userActionMapper;
+    @Resource
+    private UserFollowMapper userFollowMapper;
 
     // 
     //  分页查询用户列表
@@ -130,6 +136,26 @@ public class AdminUserServiceImpl implements AdminUserService {
         vo.setStatusDesc(user.getStatus() == 1 ? "启用" : "禁用");
 
         return vo;
+    }
+
+    @Override
+    public Map<String, Object> getUserActions(String userId, Integer pageNum, Integer pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+        Map<String, Object> result = new HashMap<>();
+        result.put("likes",     userActionMapper.selectByUserId(userId, 1, offset, pageSize));
+        result.put("favorites", userActionMapper.selectByUserId(userId, 2, offset, pageSize));
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getUserFollows(String userId, Integer pageNum, Integer pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+        Map<String, Object> result = new HashMap<>();
+        result.put("following", userFollowMapper.selectFollowing(userId, offset, pageSize));
+        result.put("followers", userFollowMapper.selectFollowers(userId, offset, pageSize));
+        result.put("followingCount", userFollowMapper.countFollowing(userId));
+        result.put("followerCount",  userFollowMapper.countFollowers(userId));
+        return result;
     }
 
     private String getSexDesc(Integer sex) {
