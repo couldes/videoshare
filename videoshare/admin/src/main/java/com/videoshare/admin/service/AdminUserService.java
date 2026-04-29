@@ -21,4 +21,10 @@ public interface AdminUserService {
 
     /** Dashboard 统计数据 */
     Map<String, Object> getDashboardStats();
+
+    /** 用户操作记录（点赞/收藏）*/
+    Map<String, Object> getUserActions(String userId, Integer pageNum, Integer pageSize);
+
+    /** 用户关注/粉丝列表 */
+    Map<String, Object> getUserFollows(String userId, Integer pageNum, Integer pageSize);
 }

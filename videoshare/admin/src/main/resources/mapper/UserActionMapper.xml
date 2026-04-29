@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoshare.admin.mapper.UserActionMapper">
+
+    <select id="selectByUserId" resultType="java.util.HashMap">
+        SELECT a.*, v.title AS video_title
+        FROM user_action a
+        LEFT JOIN video_info v ON a.target_id = v.video_id
+        WHERE a.user_id = #{userId}
+        AND a.action_type = #{actionType}
+        ORDER BY a.create_time DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="countByUserId" resultType="Integer">
+        SELECT COUNT(1) FROM user_action
+        WHERE user_id = #{userId} AND action_type = #{actionType}
+    </select>
+
+    <delete id="delete">
+        DELETE FROM user_action
+        WHERE user_id = #{userId}
+        AND target_id = #{targetId}
+        AND action_type = #{actionType}
+    </delete>
+
+</mapper>
