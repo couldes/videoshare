@@ -24,6 +24,9 @@ public interface AdminVideoMapper {
     /** 计数（与 selectVideoList 条件一致）*/
     Integer countVideos(VideoQuery query);
 
+    /** 按 videoId 查单条视频 */
+    VideoInfo selectByVideoId(@Param("videoId") String videoId);
+
     /** 修改状态（1=发布/上架 2=下架）*/
     Integer updateStatus(@Param("videoId") String videoId, @Param("status") Integer status);
 

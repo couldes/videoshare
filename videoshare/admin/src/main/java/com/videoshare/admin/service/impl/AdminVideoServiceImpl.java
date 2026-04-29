@@ -26,6 +26,13 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     }
 
     @Override
+    public VideoInfo getVideoDetail(String videoId) {
+        VideoInfo video = adminVideoMapper.selectByVideoId(videoId);
+        if (video == null) throw new BusinessException("视频不存在");
+        return video;
+    }
+
+    @Override
     public void updateVideoStatus(String videoId, Integer status) {
         if (status == null || (status != 1 && status != 2)) {
             throw new BusinessException("非法状态值：1=上架 2=下架");
