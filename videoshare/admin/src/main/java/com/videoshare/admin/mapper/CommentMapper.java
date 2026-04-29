@@ -1,4 +1,4 @@
-// 路径: web/src/main/java/com/videoshare/web/mapper/CommentMapper.java
+// 路径: admin/src/main/java/com/videoshare/admin/mapper/CommentMapper.java
 package com.videoshare.admin.mapper;
 
 import com.videoshare.common.entity.CommentInfo;

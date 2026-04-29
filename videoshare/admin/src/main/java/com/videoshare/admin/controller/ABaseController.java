@@ -31,9 +31,7 @@ public class ABaseController {
     //获取当前登录的管理员账号
      //由拦截器在 preHandle 中通过 request.setAttribute("adminAccount", ...) 存入
 
-    /*
     protected String getAdminAccount(HttpServletRequest request) {
         return (String) request.getAttribute("adminAccount");
     }
-     */
 }
