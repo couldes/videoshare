@@ -10,6 +10,9 @@ import router from './router'
 import '@videoshare/assets/reset.css'
 import '@videoshare/assets/element-theme.css'
 import './assets/theme.css'
+import { initTheme } from '@videoshare/utils/theme'
+
+initTheme()
 
 const app = createApp(App)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
