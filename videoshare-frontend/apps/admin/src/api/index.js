@@ -17,6 +17,8 @@
 import { createRequest }          from '@videoshare/api/request'
 import { createAdminAccountApi }  from '@videoshare/api/admin/account'
 import { createAdminUserApi }     from '@videoshare/api/admin/user'
+import { createAdminVideoApi }    from '@videoshare/api/admin/video'
+import { createAdminCommentApi }  from '@videoshare/api/admin/comment'
 import { auth }                   from '@/utils/auth'
 import router                     from '@/router'
 import { ElMessage }              from 'element-plus'
@@ -45,3 +47,5 @@ request.interceptors.response.use(
 // ★ 组装并导出业务 API 实例
 export const adminAccountApi = createAdminAccountApi(request)
 export const adminUserApi    = createAdminUserApi(request)
+export const adminVideoApi   = createAdminVideoApi(request)
+export const adminCommentApi = createAdminCommentApi(request)

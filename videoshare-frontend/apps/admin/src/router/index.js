@@ -25,6 +25,18 @@ const routes = [
         name: 'UserManage',
         component: () => import('@/views/user/UserManage.vue'),
         meta: { title: '用户管理', icon: 'User' }
+      },
+      {
+        path: 'video',
+        name: 'VideoManage',
+        component: () => import('@/views/video/VideoManage.vue'),
+        meta: { title: '视频管理', icon: 'VideoCamera' }
+      },
+      {
+        path: 'comment',
+        name: 'CommentManage',
+        component: () => import('@/views/comment/CommentManage.vue'),
+        meta: { title: '评论管理', icon: 'ChatLineSquare' }
       }
     ]
   },
