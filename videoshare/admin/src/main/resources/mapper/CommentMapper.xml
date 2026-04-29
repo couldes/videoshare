@@ -31,10 +31,9 @@
     <!-- 分页查顶级评论（置顶在前，再按时间倒序）-->
     <select id="selectTopComments" resultMap="CommentMap">
         SELECT * FROM comment_info
-        WHERE video_id = #{videoId}
-        AND p_comment_id = 0
+        WHERE p_comment_id = 0
+        <if test="videoId != null and videoId != ''">AND video_id = #{videoId}</if>
         <if test="status != null">AND status = #{status}</if>
-        <if test="status == null">AND status = 1</if>
         ORDER BY top_type DESC, create_time DESC
         LIMIT #{pageSize} OFFSET #{offset}
     </select>
@@ -42,10 +41,9 @@
     <!-- 顶级评论计数 -->
     <select id="countTopComments" resultType="Integer">
         SELECT COUNT(1) FROM comment_info
-        WHERE video_id = #{videoId}
-        AND p_comment_id = 0
+        WHERE p_comment_id = 0
+        <if test="videoId != null and videoId != ''">AND video_id = #{videoId}</if>
         <if test="status != null">AND status = #{status}</if>
-        <if test="status == null">AND status = 1</if>
     </select>
 
     <!-- 某顶级评论的全部回复（按时间正序） -->

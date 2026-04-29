@@ -40,6 +40,14 @@ export function createProfileApi(request) {
       request({ method: 'GET', url: '/user/follow/status', params: { followUserId } }),
 
     /**
+     * 搜索用户（按昵称/邮箱模糊匹配）
+     * GET /user/search?keyword=xxx
+     * @returns [{ userId, nickName, email, joinTime }]
+     */
+    searchUsers: (keyword) =>
+      request({ method: 'GET', url: '/user/search', params: { keyword } }),
+
+    /**
      * 我的收藏视频列表
      * GET /user/favorites
      */

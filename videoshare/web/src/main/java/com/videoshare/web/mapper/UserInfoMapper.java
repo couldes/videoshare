@@ -5,6 +5,8 @@ import com.videoshare.common.entity.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 //数据库操作接口
 
 @Mapper
@@ -29,4 +31,7 @@ public interface UserInfoMapper {
     Integer updateProfile(@Param("userId")    String userId,
                           @Param("bio")       String bio,
                           @Param("avatarUrl") String avatarUrl);
+
+    // 搜索用户（按昵称/邮箱模糊匹配）
+    List<UserInfo> searchByKeyword(@Param("keyword") String keyword);
 }
