@@ -109,6 +109,16 @@
           <span>用户管理</span>
           <el-icon class="qa-arrow"><ArrowRight /></el-icon>
         </RouterLink>
+        <RouterLink to="/video" class="qa-item">
+          <el-icon><VideoCamera /></el-icon>
+          <span>视频管理</span>
+          <el-icon class="qa-arrow"><ArrowRight /></el-icon>
+        </RouterLink>
+        <RouterLink to="/comment" class="qa-item">
+          <el-icon><ChatLineSquare /></el-icon>
+          <span>评论管理</span>
+          <el-icon class="qa-arrow"><ArrowRight /></el-icon>
+        </RouterLink>
       </div>
     </div>
   </div>
@@ -116,9 +126,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { adminUserApi } from '@/api'
-import { formatDate } from '@videoshare/utils/format'
-import { USER_STATUS_MAP } from '@videoshare/constants'
+import { adminUserApi, adminVideoApi } from '@/api'
+import { formatDate, formatViews } from '@videoshare/utils/format'
+import { USER_STATUS_MAP, VIDEO_STATUS_MAP } from '@videoshare/constants'
 
 // ★ 图例从共享常量动态构建，新增状态只改 constants 一处
 const legendItems = [
@@ -127,15 +137,21 @@ const legendItems = [
 ]
 
 const loading = ref(false)
-const stats   = ref({ totalUsers: 0, activeUsers: 0, disabledUsers: 0, dailyRegister: [] })
+const stats   = ref({
+  totalUsers: 0, activeUsers: 0, disabledUsers: 0, dailyRegister: [],
+  totalVideos: 0, publishedVideos: 0, pendingVideos: 0, offlineVideos: 0, dailyPublish: []
+})
 
 // ★ 今日日期由 shared formatDate 生成，格式统一
 const today = formatDate(new Date(), 'date')
 
 const statCards = [
-  { key: 'totalUsers',    label: '总用户数', desc: '平台注册总量', icon: 'User',        color: '#3b82f6' },
-  { key: 'activeUsers',   label: '活跃用户', desc: '账号状态正常', icon: 'UserFilled',  color: 'var(--success)' },
-  { key: 'disabledUsers', label: '禁用用户', desc: '账号被封禁',   icon: 'CircleClose', color: 'var(--danger)' },
+  { key: 'totalUsers',    label: '总用户数', desc: '平台注册总量',  icon: 'User',        color: '#3b82f6' },
+  { key: 'activeUsers',   label: '活跃用户', desc: '账号状态正常',  icon: 'UserFilled',  color: 'var(--success)' },
+  { key: 'disabledUsers', label: '禁用用户', desc: '账号被封禁',    icon: 'CircleClose', color: 'var(--danger)' },
+  { key: 'totalVideos',   label: '视频总量', desc: '全平台视频数',  icon: 'VideoCamera', color: '#8b5cf6' },
+  { key: 'publishedVideos', label: '已发布', desc: '正常在线视频',  icon: 'VideoPlay',   color: 'var(--success)' },
+  { key: 'offlineVideos',   label: '已下架', desc: '被下架的视频',  icon: 'VideoPause',  color: 'var(--danger)' },
 ]
 
 onMounted(loadData)
@@ -144,8 +160,10 @@ async function loadData() {
   loading.value = true
   try {
     // GET /admin/user/dashboard → UserManageController.getDashboard()
-    const data = await adminUserApi.getDashboard()
-    stats.value = data
+    const userData = await adminUserApi.getDashboard()
+    // GET /admin/video/stats → VideoManageController.getVideoStats()
+    const videoData = await adminVideoApi.getStats()
+    stats.value = { ...userData, ...videoData }
   } finally {
     loading.value = false
   }

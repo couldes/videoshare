@@ -30,10 +30,14 @@ function createBaseConfig(appDir) {
         '@videoshare/api/profile':        resolve(appDir, '../../packages/api/src/profile.js'),
         '@videoshare/api/admin/account':  resolve(appDir, '../../packages/api/src/admin/account.js'),
         '@videoshare/api/admin/user':     resolve(appDir, '../../packages/api/src/admin/user.js'),
+        '@videoshare/api/admin/video':    resolve(appDir, '../../packages/api/src/admin/video.js'),
+        '@videoshare/api/admin/comment':  resolve(appDir, '../../packages/api/src/admin/comment.js'),
         '@videoshare/utils':              resolve(appDir, '../../packages/utils/src'),
         '@videoshare/utils/auth':         resolve(appDir, '../../packages/utils/src/auth.js'),
         '@videoshare/utils/format':       resolve(appDir, '../../packages/utils/src/format.js'),
         '@videoshare/utils/validate':     resolve(appDir, '../../packages/utils/src/validate.js'),
+        '@videoshare/utils/theme':       resolve(appDir, '../../packages/utils/src/theme.js'),
+        '@videoshare/utils/history':     resolve(appDir, '../../packages/utils/src/history.js'),
         '@videoshare/constants':          resolve(appDir, '../../packages/constants/src/index.js'),
         '@videoshare/assets':             resolve(appDir, '../../packages/assets')
       }

@@ -38,6 +38,26 @@ export function createAdminUserApi(request) {
      * @returns {{ totalUsers, activeUsers, disabledUsers, dailyRegister }}
      */
     getDashboard: () =>
-      request({ method: 'GET', url: '/admin/user/dashboard' })
+      request({ method: 'GET', url: '/admin/user/dashboard' }),
+
+    /**
+     * 用户操作记录（点赞/收藏）
+     * @param {string} userId
+     * @param {number} pageNum
+     * @param {number} pageSize
+     * @returns {{ likes, favorites }}
+     */
+    getUserActions: (userId, pageNum = 1, pageSize = 10) =>
+      request({ method: 'GET', url: `/admin/user/${userId}/actions`, params: { pageNum, pageSize } }),
+
+    /**
+     * 用户关注/粉丝列表
+     * @param {string} userId
+     * @param {number} pageNum
+     * @param {number} pageSize
+     * @returns {{ following, followers, followingCount, followerCount }}
+     */
+    getUserFollows: (userId, pageNum = 1, pageSize = 10) =>
+      request({ method: 'GET', url: `/admin/user/${userId}/follows`, params: { pageNum, pageSize } })
   }
 }

@@ -35,6 +35,44 @@ export const USER_SEX_MAP = {
   [USER_SEX.SECRECY]: '保密'
 }
 
+// ===== 视频状态（对应后端 status 字段）=====
+export const VIDEO_STATUS = {
+  PENDING:   0,
+  PUBLISHED: 1,
+  OFFLINE:   2
+}
+
+export const VIDEO_STATUS_MAP = {
+  [VIDEO_STATUS.PENDING]:   '待审核',
+  [VIDEO_STATUS.PUBLISHED]: '已发布',
+  [VIDEO_STATUS.OFFLINE]:   '已下架'
+}
+
+export const VIDEO_STATUS_TAG = {
+  [VIDEO_STATUS.PENDING]:   'warning',
+  [VIDEO_STATUS.PUBLISHED]: 'success',
+  [VIDEO_STATUS.OFFLINE]:   'info'
+}
+
+// ===== 评论状态（对应后端 comment status 字段）=====
+export const COMMENT_STATUS = {
+  PENDING:  0,
+  APPROVED: 1,
+  DELETED:  2
+}
+
+export const COMMENT_STATUS_MAP = {
+  [COMMENT_STATUS.PENDING]:  '待审核',
+  [COMMENT_STATUS.APPROVED]: '已通过',
+  [COMMENT_STATUS.DELETED]:  '已删除'
+}
+
+export const COMMENT_STATUS_TAG = {
+  [COMMENT_STATUS.PENDING]:  'warning',
+  [COMMENT_STATUS.APPROVED]: 'success',
+  [COMMENT_STATUS.DELETED]:  'danger'
+}
+
 // ===== 分页默认值 =====
 export const PAGE_DEFAULTS = {
   PAGE_NUM:  1,

@@ -86,9 +86,14 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="180" align="center" fixed="right">
+        <el-table-column label="操作" width="240" align="center" fixed="right">
           <template #default="{ row }">
             <div class="action-btns">
+              <el-tooltip content="查看操作记录" placement="top">
+                <button class="act-btn act-info" @click="openHistory(row)">
+                  <el-icon><Clock /></el-icon>记录
+                </button>
+              </el-tooltip>
               <el-tooltip
                 :content="row.status === USER_STATUS.ENABLE ? '禁用该用户' : '启用该用户'"
                 placement="top">
@@ -124,13 +129,102 @@
         @current-change="fetchUsers"
         @size-change="handleSearch"/>
     </div>
+
+    <!-- 用户操作记录弹窗 -->
+    <el-dialog v-model="historyVisible" :title="`用户操作记录 - ${historyUser?.nickName}`"
+      width="800px" destroy-on-close>
+      <el-tabs v-model="historyTab" @tab-change="handleHistoryTabChange">
+        <el-tab-pane label="点赞记录" name="likes">
+          <el-table :data="historyLikes" size="small" max-height="360">
+            <el-table-column label="视频" min-width="300">
+              <template #default="{ row }">
+                <div class="video-cell">
+                  <img v-if="isValidCover(row.coverUrl)" :src="row.coverUrl"
+                    @error="e => e.target.style.display='none'"
+                    class="cover-thumb" />
+                  <span>{{ row.videoTitle || row.videoId }}</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作时间" width="180">
+              <template #default="{ row }">
+                <span class="mono small">{{ formatDate(row.createTime) }}</span>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div v-if="!historyLikes.length" class="empty-hint">暂无点赞记录</div>
+        </el-tab-pane>
+        <el-tab-pane label="收藏记录" name="favorites">
+          <el-table :data="historyFavorites" size="small" max-height="360">
+            <el-table-column label="视频" min-width="300">
+              <template #default="{ row }">
+                <div class="video-cell">
+                  <img v-if="isValidCover(row.coverUrl)" :src="row.coverUrl"
+                    @error="e => e.target.style.display='none'"
+                    class="cover-thumb" />
+                  <span>{{ row.videoTitle || row.videoId }}</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作时间" width="180">
+              <template #default="{ row }">
+                <span class="mono small">{{ formatDate(row.createTime) }}</span>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div v-if="!historyFavorites.length" class="empty-hint">暂无收藏记录</div>
+        </el-tab-pane>
+        <el-tab-pane label="关注列表" name="following">
+          <el-table :data="historyFollowing" size="small" max-height="360">
+            <el-table-column label="用户" min-width="300">
+              <template #default="{ row }">
+                <div class="user-cell">
+                  <div class="user-avatar">{{ row.nickName?.charAt(0).toUpperCase() }}</div>
+                  <div class="user-meta">
+                    <div class="user-name">{{ row.nickName }}</div>
+                    <div class="user-email mono">{{ row.userId }}</div>
+                  </div>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="关注时间" width="180">
+              <template #default="{ row }">
+                <span class="mono small">{{ formatDate(row.createTime) }}</span>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div v-if="!historyFollowing.length" class="empty-hint">暂无关注</div>
+        </el-tab-pane>
+        <el-tab-pane label="粉丝列表" name="followers">
+          <el-table :data="historyFollowers" size="small" max-height="360">
+            <el-table-column label="用户" min-width="300">
+              <template #default="{ row }">
+                <div class="user-cell">
+                  <div class="user-avatar">{{ row.nickName?.charAt(0).toUpperCase() }}</div>
+                  <div class="user-meta">
+                    <div class="user-name">{{ row.nickName }}</div>
+                    <div class="user-email mono">{{ row.userId }}</div>
+                  </div>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="关注时间" width="180">
+              <template #default="{ row }">
+                <span class="mono small">{{ formatDate(row.createTime) }}</span>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div v-if="!historyFollowers.length" class="empty-hint">暂无粉丝</div>
+        </el-tab-pane>
+      </el-tabs>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh } from '@element-plus/icons-vue'
+import { Search, Refresh, Clock } from '@element-plus/icons-vue'
 import { adminUserApi } from '@/api'
 // ★ 所有业务常量从 shared 引入，消除硬编码
 import { USER_STATUS, USER_STATUS_MAP, USER_STATUS_TAG, PAGE_DEFAULTS } from '@videoshare/constants'
@@ -148,6 +242,15 @@ const query = reactive({
 })
 
 const pagination = reactive({ total: 0, pages: 0 })
+
+// 用户操作记录弹窗
+const historyVisible  = ref(false)
+const historyUser     = ref(null)
+const historyTab      = ref('likes')
+const historyLikes     = ref([])
+const historyFavorites = ref([])
+const historyFollowing = ref([])
+const historyFollowers = ref([])
 
 onMounted(fetchUsers)
 
@@ -221,6 +324,37 @@ async function handleDelete(row) {
     if (err === 'cancel') return
   }
 }
+
+function isValidCover(url) {
+  return url && !url.startsWith('blob:')
+}
+
+async function openHistory(row) {
+  historyUser.value = row
+  historyTab.value = 'likes'
+  historyVisible.value = true
+  await loadHistoryData('likes')
+}
+
+async function handleHistoryTabChange(tab) {
+  await loadHistoryData(tab)
+}
+
+async function loadHistoryData(tab) {
+  try {
+    if (tab === 'likes' || tab === 'favorites') {
+      const result = await adminUserApi.getUserActions(historyUser.value.userId, 1, 50)
+      historyLikes.value     = (result.likes || []).map(r => r.videoInfo || r)
+      historyFavorites.value = (result.favorites || []).map(r => r.videoInfo || r)
+    } else {
+      const result = await adminUserApi.getUserFollows(historyUser.value.userId, 1, 50)
+      historyFollowing.value = result.following || []
+      historyFollowers.value = result.followers || []
+    }
+  } catch (e) {
+    // ignore
+  }
+}
 </script>
 
 <style scoped>
@@ -241,8 +375,14 @@ async function handleDelete(row) {
 .act-warn    { color: var(--warning); border-color: rgba(234,179,8,.3);  background: rgba(234,179,8,.08); }
 .act-success { color: var(--success); border-color: rgba(34,197,94,.3);  background: rgba(34,197,94,.08); }
 .act-danger  { color: var(--danger);  border-color: rgba(239,68,68,.3);  background: rgba(239,68,68,.08); }
+.act-info    { color: var(--info);    border-color: rgba(59,130,246,.3);  background: rgba(59,130,246,.08); }
 .act-warn:hover    { background: rgba(234,179,8,.18); }
 .act-success:hover { background: rgba(34,197,94,.18); }
 .act-danger:hover  { background: rgba(239,68,68,.18); }
+.act-info:hover    { background: rgba(59,130,246,.18); }
+.video-cell { display: flex; align-items: center; gap: 8px; }
+.cover-thumb { width: 80px; height: 45px; object-fit: cover; border-radius: 3px; flex-shrink: 0; }
+.empty-hint { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px; }
+.small { font-size: 12px; }
 .pagination-bar { display: flex; justify-content: flex-end; padding: 12px 16px; background: var(--bg-panel); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
 </style>

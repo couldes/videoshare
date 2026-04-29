@@ -39,6 +39,10 @@
           <!-- 实时时钟 -->
           <div class="sys-time mono">{{ currentTime }}</div>
 
+          <button class="theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色' : '切换到深色'">
+            <el-icon><component :is="isDark ? 'Sunny' : 'Moon'" /></el-icon>
+          </button>
+
           <el-dropdown trigger="click" @command="handleCommand">
             <div class="admin-info">
               <div class="admin-avatar">{{ adminStore.account.charAt(0).toUpperCase() }}</div>
@@ -73,15 +77,19 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useAdminStore } from '@/stores/admin'
 import { adminAccountApi } from '@/api'
+import { getTheme, toggleTheme } from '@videoshare/utils/theme'
 
 const $route     = useRoute()
 const router     = useRouter()
 const adminStore = useAdminStore()
 const collapsed  = ref(false)
+const isDark = computed(() => getTheme() === 'dark')
 
 const menuItems = [
-  { path: '/dashboard', icon: 'DataAnalysis', label: '数据看板' },
-  { path: '/user',      icon: 'User',         label: '用户管理' },
+  { path: '/dashboard', icon: 'DataAnalysis',  label: '数据看板' },
+  { path: '/user',      icon: 'User',          label: '用户管理' },
+  { path: '/video',     icon: 'VideoCamera',   label: '视频管理' },
+  { path: '/comment',   icon: 'ChatLineSquare', label: '评论管理' },
 ]
 
 const currentTitle = computed(
@@ -149,6 +157,8 @@ async function handleCommand(cmd) {
 .admin-name { font-size: 12px; font-weight: 600; color: var(--text-1); line-height: 1.2; }
 .admin-role { font-size: 10px; color: var(--text-muted); letter-spacing: .06em; }
 .admin-arrow { font-size: 11px; color: var(--text-muted); }
+.theme-toggle { width: 34px; height: 34px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); font-size: 16px; flex-shrink: 0; }
+.theme-toggle:hover { border-color: var(--color-accent); color: var(--color-accent); }
 :deep(.admin-dropdown) { background: var(--bg-card) !important; border-color: var(--border-strong) !important; }
 :deep(.admin-dropdown .el-dropdown-menu__item) { color: var(--text-2) !important; border-radius: var(--radius-sm) !important; gap: 8px !important; font-size: 13px !important; }
 :deep(.admin-dropdown .el-dropdown-menu__item:hover) { background: var(--bg-hover) !important; color: var(--danger) !important; }
