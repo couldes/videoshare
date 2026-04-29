@@ -17,6 +17,9 @@
       </div>
 
       <div class="navbar-right">
+        <button class="theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色' : '切换到深色'">
+          <el-icon><component :is="isDark ? 'Sunny' : 'Moon'" /></el-icon>
+        </button>
         <template v-if="!userStore.isLoggedIn">
           <RouterLink to="/login"    class="btn-ghost">登录</RouterLink>
           <RouterLink to="/register" class="btn-primary">注册</RouterLink>
@@ -42,6 +45,9 @@
                     <div class="dropdown-email">{{ userStore.userInfo?.email }}</div>
                   </div>
                 </div>
+                <el-dropdown-item command="history">
+                  <el-icon><Clock /></el-icon> 观看历史
+                </el-dropdown-item>
                 <el-dropdown-item command="profile">
                   <el-icon><User /></el-icon> 个人主页
                 </el-dropdown-item>
@@ -64,18 +70,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { getTheme, toggleTheme } from '@videoshare/utils/theme'
 
 defineEmits(['toggle-sidebar'])
 const router    = useRouter()
 const userStore = useUserStore()
 const searchQuery = ref('')
+const isDark = computed(() => getTheme() === 'dark')
 
 function handleSearch() {
-  if (searchQuery.value.trim()) ElMessage.info(`搜索：${searchQuery.value}（功能开发中）`)
+  const q = searchQuery.value.trim()
+  if (q) router.push({ path: '/search', query: { keyword: q } })
 }
 
 async function handleCommand(cmd) {
@@ -84,6 +93,8 @@ async function handleCommand(cmd) {
       confirmButtonText: '退出', cancelButtonText: '取消', type: 'warning'
     })
     userStore.logout(); ElMessage.success('已退出登录'); router.push('/login')
+  } else if (cmd === 'history') {
+    router.push('/history')
   } else if (cmd === 'profile') {
     router.push(`/user/${userStore.userInfo?.userId}`)
   } else if (cmd === 'favorites') {
@@ -95,7 +106,7 @@ async function handleCommand(cmd) {
 </script>
 
 <style scoped>
-.navbar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: rgba(10,10,12,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); z-index: 100; }
+.navbar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--bg-blur); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); z-index: 100; }
 .navbar-inner { max-width: 1600px; margin: 0 auto; height: 100%; padding: 0 16px; display: flex; align-items: center; gap: 16px; }
 .navbar-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .icon-btn { width: 36px; height: 36px; border: none; background: none; color: var(--text-2); cursor: pointer; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; transition: var(--transition); font-size: 18px; }
@@ -111,6 +122,8 @@ async function handleCommand(cmd) {
 .search-btn { width: 42px; background: none; border: none; border-left: 1px solid var(--border); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
 .search-btn:hover { color: var(--text-1); background: var(--bg-hover); }
 .navbar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.theme-toggle { width: 34px; height: 34px; border-radius: var(--radius-md); border: 1px solid var(--border); background: none; color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); font-size: 16px; flex-shrink: 0; }
+.theme-toggle:hover { border-color: var(--color-accent); color: var(--color-accent); }
 .btn-ghost { padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--text-1); text-decoration: none; border: 1px solid var(--border); transition: var(--transition); }
 .btn-ghost:hover { background: var(--bg-hover); }
 .btn-primary { padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 600; color: #fff; text-decoration: none; background: var(--color-accent); transition: var(--transition); }
