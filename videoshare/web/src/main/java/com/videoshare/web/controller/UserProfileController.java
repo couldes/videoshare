@@ -1,10 +1,16 @@
 package com.videoshare.web.controller;
 
 import com.videoshare.web.service.UserProfileService;
+import com.videoshare.web.mapper.UserInfoMapper;
+import com.videoshare.common.entity.UserInfo;
 import com.videoshare.common.vo.ResponseVO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 /**
  * 用户个人主页接口
@@ -12,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
  *   POST /user/profile/update    → 更新自己的简介（需登录）
  *   POST /user/follow            → 关注 / 取消关注（需登录）
  *   GET  /user/follow/status     → 是否已关注某用户
+ *   GET  /user/search            → 搜索用户（按昵称/邮箱）
  *   GET  /user/favorites         → 我的收藏列表（需登录）
  */
 @RestController
@@ -20,6 +27,8 @@ public class UserProfileController extends ABaseController {
 
     @Resource
     private UserProfileService userProfileService;
+    @Resource
+    private UserInfoMapper     userInfoMapper;
 
     /** 用户公开主页信息 */
     @GetMapping("/profile/{userId}")
@@ -58,6 +67,22 @@ public class UserProfileController extends ABaseController {
             HttpServletRequest request) {
         String userId = getUserIdFromToken(request);
         return getSuccessResponseVO(userProfileService.isFollowing(userId, followUserId));
+    }
+
+    /** 搜索用户（按昵称/邮箱模糊匹配）*/
+    @GetMapping("/search")
+    public ResponseVO searchUsers(@RequestParam String keyword) {
+        List<UserInfo> users = userInfoMapper.searchByKeyword(keyword);
+        // 组装简化结果，只返回前端需要的字段
+        List<Map<String, Object>> result = users.stream().map(u -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("userId",   u.getUserId());
+            m.put("nickName", u.getNickName());
+            m.put("email",    u.getEmail());
+            m.put("joinTime", u.getJoinTime());
+            return m;
+        }).collect(Collectors.toList());
+        return getSuccessResponseVO(result);
     }
 
     /** 我的收藏视频列表 */

@@ -28,6 +28,17 @@
         SELECT * FROM user_info WHERE user_id = #{userId}
     </select>
 
+    <!-- 搜索用户（按昵称/邮箱模糊匹配）-->
+    <select id="searchByKeyword" resultType="com.videoshare.common.entity.UserInfo">
+        SELECT user_id, nick_name, email, join_time, status
+        FROM user_info
+        WHERE status = 1
+          AND (nick_name LIKE CONCAT('%', #{keyword}, '%')
+            OR email     LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY join_time DESC
+        LIMIT 20
+    </select>
+
     <!-- 更新个人资料（只更新非 null 字段）-->
     <update id="updateProfile">
         UPDATE user_info
