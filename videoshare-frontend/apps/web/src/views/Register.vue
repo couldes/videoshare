@@ -1,8 +1,12 @@
 <template>
   <div class="auth-layout">
-    <div class="bg-decor"><div class="c1"/><div class="c2"/></div>
     <div class="auth-card">
-      <RouterLink to="/" class="card-logo"><span class="logo-icon">▶</span><span class="logo-text">VideoShare</span></RouterLink>
+      <RouterLink to="/" class="card-logo">
+        <svg viewBox="0 0 24 24" width="28" height="28">
+          <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0C.488 3.45.029 5.804 0 12c.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0C23.512 20.55 23.971 18.196 24 12c-.029-6.185-.484-8.549-4.385-8.816zM9 16V8l8 4-8 4z" fill="var(--color-accent)"/>
+        </svg>
+        <span class="logo-text">VideoShare</span>
+      </RouterLink>
       <h1 class="card-title">创建账号</h1>
       <p class="card-sub">加入我们，开始探索精彩内容</p>
       <el-form ref="formRef" :model="form" :rules="dynamicRules" label-position="top">
@@ -35,8 +39,8 @@
           <el-checkbox v-model="agreed" />
           <span class="agree-text">我已阅读并同意<a href="#" class="link">《用户协议》</a>和<a href="#" class="link">《隐私政策》</a></span>
         </div>
-        <el-button type="primary" size="large" class="submit-btn" :loading="loading" :disabled="!agreed" @click="handleSubmit">
-          {{ loading ? '注册中...' : '注 册' }}
+        <el-button type="danger" size="large" class="submit-btn" :loading="loading" :disabled="!agreed" @click="handleSubmit">
+          {{ loading ? '注册中...' : '注册' }}
         </el-button>
       </el-form>
       <p class="auth-footer">已有账号？<RouterLink to="/login" class="link">立即登录</RouterLink></p>
@@ -65,7 +69,6 @@ const strength      = computed(() => calcPasswordStrength(form.password))
 const strengthLabel = computed(() => PASSWORD_STRENGTH_LABELS[strength.value])
 const strengthClass = computed(() => PASSWORD_STRENGTH_CLASSES[strength.value])
 
-// confirmPasswordRules 需要动态读取 form.password，用 computed 保持响应式
 const dynamicRules = computed(() => ({
   email:           emailRules,
   nickName:        nickNameRules,
@@ -96,21 +99,27 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.auth-layout { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; position: relative; overflow: hidden; }
-.c1, .c2 { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; }
-.c1 { width: 500px; height: 500px; background: rgba(124,58,237,.08); top: -200px; left: -100px; }
-.c2 { width: 400px; height: 400px; background: rgba(255,45,85,.06); bottom: -150px; right: -100px; }
-.auth-card { width: 100%; max-width: 420px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 36px 32px; position: relative; z-index: 1; box-shadow: 0 24px 80px rgba(0,0,0,.5); animation: card-in .4s cubic-bezier(.34,1.56,.64,1) both; }
-@keyframes card-in { from { opacity: 0; transform: translateY(20px) scale(.97); } to { opacity: 1; transform: none; } }
-.card-logo { display: flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-1); margin-bottom: 24px; }
-.logo-icon { font-size: 20px; color: var(--color-accent); } .logo-text { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
-.card-title { font-family: var(--font-display); font-size: 26px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 4px; }
-.card-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
-.submit-btn { width: 100%; height: 44px; font-size: 15px; font-weight: 600; border-radius: var(--radius-md) !important; margin-top: 8px; }
-.captcha-row { display: flex; gap: 10px; width: 100%; } .captcha-input { flex: 1; }
+.auth-layout {
+  min-height: 100vh; display: flex; align-items: center;
+  justify-content: center; padding: 24px;
+  background: var(--bg-base);
+}
+.auth-card {
+  width: 100%; max-width: 380px;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 32px;
+}
+.card-logo { display: flex; align-items: center; gap: 4px; text-decoration: none; margin-bottom: 24px; }
+.logo-text { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text-1); }
+.card-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.card-sub { font-size: 13px; color: var(--text-2); margin-bottom: 24px; }
+.submit-btn { width: 100%; height: 40px; font-size: 14px; font-weight: 600; border-radius: 20px !important; margin-top: 4px; }
+.captcha-row { display: flex; gap: 10px; width: 100%; }
+.captcha-input { flex: 1; }
 .captcha-wrap { width: 120px; height: 40px; flex-shrink: 0; border-radius: var(--radius-sm); overflow: hidden; cursor: pointer; border: 1px solid var(--border); background: var(--bg-card); display: flex; align-items: center; justify-content: center; }
 .captcha-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.spin { animation: rotate 1s linear infinite; } @keyframes rotate { to { transform: rotate(360deg); } }
+.spin { animation: rotate 1s linear infinite; }
+@keyframes rotate { to { transform: rotate(360deg); } }
 .strength-bar { display: flex; gap: 4px; margin-top: 6px; }
 .strength-block { flex: 1; height: 3px; border-radius: 2px; background: var(--bg-hover); transition: background .3s; }
 .strength-block.weak { background: #ef4444; } .strength-block.fair { background: #f59e0b; }
