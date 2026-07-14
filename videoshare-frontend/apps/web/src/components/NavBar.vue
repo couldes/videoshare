@@ -2,39 +2,39 @@
   <header class="navbar">
     <div class="navbar-inner">
       <div class="navbar-left">
-        <button class="icon-btn" @click="$emit('toggle-sidebar')"><el-icon><Operation /></el-icon></button>
+        <button class="menu-btn" @click="$emit('toggle-sidebar')">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
         <RouterLink to="/" class="logo">
-          <span class="logo-icon">▶</span><span class="logo-text">VideoShare</span>
+          <svg class="logo-icon" viewBox="0 0 24 24" width="28" height="28">
+            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0C.488 3.45.029 5.804 0 12c.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0C23.512 20.55 23.971 18.196 24 12c-.029-6.185-.484-8.549-4.385-8.816zM9 16V8l8 4-8 4z" fill="#ff0033"/>
+          </svg>
+          <span class="logo-text">VideoShare</span>
         </RouterLink>
       </div>
 
       <div class="navbar-center">
         <div class="search-bar">
-          <input v-model="searchQuery" class="search-input" placeholder="搜索视频、频道..."
+          <input v-model="searchQuery" class="search-input" placeholder="搜索"
             @keydown.enter="handleSearch" />
-          <button class="search-btn" @click="handleSearch"><el-icon><Search /></el-icon></button>
+          <button class="search-btn" @click="handleSearch">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </button>
         </div>
       </div>
 
       <div class="navbar-right">
-        <button class="theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色' : '切换到深色'">
-          <el-icon><component :is="isDark ? 'Sunny' : 'Moon'" /></el-icon>
-        </button>
         <template v-if="!userStore.isLoggedIn">
-          <RouterLink to="/login"    class="btn-ghost">登录</RouterLink>
-          <RouterLink to="/register" class="btn-primary">注册</RouterLink>
+          <RouterLink to="/login" class="login-btn">登录</RouterLink>
         </template>
         <template v-else>
-          <!-- 上传按钮 -->
           <RouterLink to="/upload" class="upload-btn" title="发布视频">
-            <el-icon><Upload /></el-icon>
-            <span>发布</span>
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
           </RouterLink>
 
           <el-dropdown trigger="click" @command="handleCommand">
             <div class="avatar-wrap">
               <div class="avatar">{{ userStore.nickName.charAt(0).toUpperCase() }}</div>
-              <el-icon class="avatar-arrow"><ArrowDown /></el-icon>
             </div>
             <template #dropdown>
               <el-dropdown-menu class="user-dropdown">
@@ -46,19 +46,24 @@
                   </div>
                 </div>
                 <el-dropdown-item command="history">
-                  <el-icon><Clock /></el-icon> 观看历史
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                  观看历史
                 </el-dropdown-item>
                 <el-dropdown-item command="profile">
-                  <el-icon><User /></el-icon> 个人主页
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                  个人主页
                 </el-dropdown-item>
                 <el-dropdown-item command="favorites">
-                  <el-icon><Star /></el-icon> 我的收藏
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                  我的收藏
                 </el-dropdown-item>
-                <el-dropdown-item command="upload">
-                  <el-icon><Upload /></el-icon> 发布视频
+                <el-dropdown-item command="theme" divided>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg>
+                  {{ isDark ? '浅色主题' : '深色主题' }}
                 </el-dropdown-item>
-                <el-dropdown-item divided command="logout">
-                  <el-icon><SwitchButton /></el-icon> 退出登录
+                <el-dropdown-item command="logout">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                  退出登录
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -70,19 +75,23 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import { getTheme, toggleTheme } from '@videoshare/utils/theme'
+import { getTheme, toggleTheme as toggleAppTheme } from '@videoshare/utils/theme'
 
 defineEmits(['toggle-sidebar'])
 const router    = useRouter()
 const userStore = useUserStore()
 const searchQuery = ref('')
-const isDark = computed(() => getTheme() === 'dark')
+const isDark = ref(getTheme() === 'dark')
 
-function handleSearch() {
+function toggleTheme() {
+  toggleAppTheme(); isDark.value = !isDark.value
+}
+
+async function handleSearch() {
   const q = searchQuery.value.trim()
   if (q) router.push({ path: '/search', query: { keyword: q } })
 }
@@ -101,44 +110,107 @@ async function handleCommand(cmd) {
     router.push('/favorites')
   } else if (cmd === 'upload') {
     router.push('/upload')
+  } else if (cmd === 'theme') {
+    toggleTheme()
   }
 }
 </script>
 
 <style scoped>
-.navbar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--bg-blur); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); z-index: 100; }
-.navbar-inner { max-width: 1600px; margin: 0 auto; height: 100%; padding: 0 16px; display: flex; align-items: center; gap: 16px; }
-.navbar-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.icon-btn { width: 36px; height: 36px; border: none; background: none; color: var(--text-2); cursor: pointer; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; transition: var(--transition); font-size: 18px; }
-.icon-btn:hover { background: var(--bg-hover); color: var(--text-1); }
-.logo { display: flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-1); }
-.logo-icon { font-size: 18px; color: var(--color-accent); }
-.logo-text { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
-.navbar-center { flex: 1; max-width: 540px; margin: 0 auto; }
-.search-bar { display: flex; height: 36px; border-radius: 100px; overflow: hidden; background: var(--bg-input); border: 1px solid var(--border); transition: var(--transition); }
-.search-bar:focus-within { border-color: var(--color-accent); }
-.search-input { flex: 1; padding: 0 14px; background: none; border: none; outline: none; color: var(--text-1); font-family: var(--font-body); font-size: 13px; }
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 56px;
+  background: var(--bg-base);
+  z-index: 1000;
+}
+.navbar-inner {
+  max-width: 100%;
+  height: 100%; padding: 0 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.navbar-left { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.menu-btn {
+  width: 40px; height: 40px; border: none; background: none;
+  color: var(--text-1); cursor: pointer; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.menu-btn:hover { background: var(--bg-hover); }
+.logo { display: flex; align-items: center; gap: 2px; text-decoration: none; }
+.logo-text {
+  font-family: var(--font-display); font-size: 18px; font-weight: 700;
+  color: var(--text-1); letter-spacing: -.5px;
+}
+.navbar-center { flex: 1; max-width: 640px; margin: 0 auto; padding: 0 40px; }
+.search-bar {
+  display: flex; height: 40px;
+  border-radius: 20px; overflow: hidden;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+.search-bar:focus-within { border-color: #555; }
+.search-input {
+  flex: 1; padding: 0 16px; background: none; border: none;
+  outline: none; color: var(--text-1);
+  font-family: var(--font-body); font-size: 14px;
+}
 .search-input::placeholder { color: var(--text-muted); }
-.search-btn { width: 42px; background: none; border: none; border-left: 1px solid var(--border); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
-.search-btn:hover { color: var(--text-1); background: var(--bg-hover); }
-.navbar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.theme-toggle { width: 34px; height: 34px; border-radius: var(--radius-md); border: 1px solid var(--border); background: none; color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); font-size: 16px; flex-shrink: 0; }
-.theme-toggle:hover { border-color: var(--color-accent); color: var(--color-accent); }
-.btn-ghost { padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--text-1); text-decoration: none; border: 1px solid var(--border); transition: var(--transition); }
-.btn-ghost:hover { background: var(--bg-hover); }
-.btn-primary { padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 600; color: #fff; text-decoration: none; background: var(--color-accent); transition: var(--transition); }
-.btn-primary:hover { filter: brightness(1.1); }
-.upload-btn { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-2); text-decoration: none; font-size: 13px; font-weight: 500; transition: var(--transition); }
-.upload-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
-.avatar-wrap { display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px; border-radius: var(--radius-md); transition: var(--transition); }
-.avatar-wrap:hover { background: var(--bg-hover); }
-.avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--color-accent), #7c3aed); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #fff; }
-.avatar-arrow { font-size: 11px; color: var(--text-muted); }
-:deep(.user-dropdown) { background: var(--bg-card) !important; border: 1px solid var(--border) !important; padding: 4px !important; min-width: 200px; }
-:deep(.el-dropdown-menu__item) { color: var(--text-2) !important; border-radius: var(--radius-sm) !important; gap: 8px; }
+.search-btn {
+  width: 56px; background: var(--bg-hover); border: none;
+  border-left: 1px solid var(--border);
+  color: var(--text-1); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.search-btn:hover { background: #333; }
+
+.navbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.login-btn {
+  padding: 6px 16px; border-radius: 20px; font-size: 13px;
+  font-weight: 600; color: #fff; text-decoration: none;
+  background: var(--color-accent); transition: var(--transition);
+}
+.login-btn:hover { background: #cc0029; }
+
+.upload-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-1); text-decoration: none;
+  transition: var(--transition);
+}
+.upload-btn:hover { background: var(--bg-hover); }
+
+.avatar-wrap { display: flex; align-items: center; cursor: pointer; padding: 2px; }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent), #7c3aed);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; color: #fff;
+}
+
+.user-dropdown {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
+  padding: 4px !important; min-width: 210px;
+}
+:deep(.el-dropdown-menu__item) {
+  color: var(--text-2) !important; border-radius: var(--radius-sm) !important;
+  display: flex !important; align-items: center; gap: 10px; font-size: 13px;
+  padding: 8px 14px !important;
+}
 :deep(.el-dropdown-menu__item:hover) { background: var(--bg-hover) !important; color: var(--text-1) !important; }
-.dropdown-header { display: flex; align-items: center; gap: 10px; padding: 10px 12px 14px; }
-.dropdown-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--color-accent), #7c3aed); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; }
+
+.dropdown-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px 14px; border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.dropdown-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent), #7c3aed);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0;
+}
 .dropdown-name  { font-weight: 600; color: var(--text-1); font-size: 13px; }
 .dropdown-email { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 </style>

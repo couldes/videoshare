@@ -1,47 +1,37 @@
 <template>
-  <div class="layout">
-    <NavBar @toggle-sidebar="sidebarCollapsed = !sidebarCollapsed" />
-    <div class="layout-body">
-      <SideBar :collapsed="sidebarCollapsed" />
-      <main class="main-content">
-        <div class="category-bar">
-          <div class="category-scroll">
-            <button v-for="cat in categoryTabs" :key="cat" class="category-tab"
-              :class="{ active: activeCategory === cat }" @click="switchCategory(cat)">
-              {{ cat }}
-            </button>
-          </div>
-        </div>
-
-        <div v-if="videos.length > 0" class="video-grid">
-          <VideoCard v-for="video in videos" :key="video.videoId" :video="video" />
-        </div>
-
-        <div v-else-if="!loading" class="empty-state">
-          <el-icon class="empty-icon"><VideoCamera /></el-icon>
-          <p>暂无视频内容</p>
-        </div>
-
-        <div v-if="hasMore" class="load-more">
-          <button class="load-more-btn" :disabled="loading" @click="loadMore">
-            <el-icon v-if="loading" class="spin"><Loading /></el-icon>
-            <span>{{ loading ? '加载中...' : '加载更多' }}</span>
-          </button>
-        </div>
-      </main>
+  <DefaultLayout>
+    <div class="category-bar">
+      <div class="category-scroll">
+        <button v-for="cat in categoryTabs" :key="cat" class="category-tab"
+          :class="{ active: activeCategory === cat }" @click="switchCategory(cat)">
+          {{ cat }}
+        </button>
+      </div>
     </div>
-  </div>
+
+    <div v-if="videos.length > 0" class="video-grid">
+      <VideoCard v-for="video in videos" :key="video.videoId" :video="video" />
+    </div>
+
+    <div v-else-if="!loading" class="empty-state">
+      <p>暂无视频内容</p>
+    </div>
+
+    <div v-if="hasMore" class="load-more">
+      <button class="load-more-btn" :disabled="loading" @click="loadMore">
+        {{ loading ? '加载中...' : '加载更多' }}
+      </button>
+    </div>
+  </DefaultLayout>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import NavBar from '@/components/NavBar.vue'
-import SideBar from '@/components/SideBar.vue'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import VideoCard from '@/components/VideoCard.vue'
 import { videoApi } from '@/api'
 import { PAGE_DEFAULTS } from '@videoshare/constants'
 
-const sidebarCollapsed = ref(false)
 const activeCategory   = ref('全部')
 const loading          = ref(false)
 const videos           = ref([])
@@ -55,10 +45,7 @@ onMounted(() => fetchVideos(true))
 
 function buildQuery(reset) {
   if (reset) currentPage.value = 1
-  const params = {
-    pageNum:  currentPage.value,
-    pageSize: PAGE_DEFAULTS.PAGE_SIZE
-  }
+  const params = { pageNum: currentPage.value, pageSize: PAGE_DEFAULTS.PAGE_SIZE }
   if (activeCategory.value !== '全部') params.category = activeCategory.value
   return params
 }
@@ -68,16 +55,11 @@ async function fetchVideos(reset = false) {
   try {
     const params = buildQuery(reset)
     const result = await videoApi.getVideoList(params)
-    if (reset) {
-      videos.value = result.list || []
-    } else {
-      videos.value.push(...(result.list || []))
-    }
+    if (reset) videos.value = result.list || []
+    else videos.value.push(...(result.list || []))
     totalCount.value = result.total || 0
     hasMore.value = videos.value.length < totalCount.value
-  } finally {
-    loading.value = false
-  }
+  } finally { loading.value = false }
 }
 
 function switchCategory(cat) {
@@ -92,23 +74,35 @@ async function loadMore() {
 </script>
 
 <style scoped>
-.layout { min-height: 100vh; display: flex; flex-direction: column; }
-.layout-body { display: flex; margin-top: 56px; min-height: calc(100vh - 56px); }
-.main-content { flex: 1; overflow: hidden; padding: 0 16px 40px; }
-.category-bar { position: sticky; top: 56px; background: var(--bg-blur); backdrop-filter: blur(10px); padding: 10px 16px; margin: 0 -16px; border-bottom: 1px solid var(--border); z-index: 50; }
+.category-bar {
+  position: sticky; top: 0; background: var(--bg-base);
+  padding: 12px 0; z-index: 50;
+}
 .category-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
 .category-scroll::-webkit-scrollbar { display: none; }
-.category-tab { padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-2); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: var(--transition); font-family: var(--font-body); }
-.category-tab:hover { background: var(--bg-hover); color: var(--text-1); }
-.category-tab.active { background: var(--text-1); color: var(--bg-base); border-color: var(--text-1); font-weight: 600; }
-.video-grid { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px 12px; }
-.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; color: var(--text-muted); }
-.empty-icon { font-size: 48px; margin-bottom: 12px; }
-.empty-state p { font-size: 14px; }
+.category-tab {
+  padding: 6px 12px; border-radius: 8px; border: none;
+  background: var(--bg-hover); color: var(--text-1); font-size: 13px;
+  font-weight: 500; cursor: pointer; white-space: nowrap;
+  transition: var(--transition); font-family: var(--font-body);
+}
+.category-tab:hover { background: #3a3a3a; }
+.category-tab.active { background: var(--text-1); color: var(--bg-base); font-weight: 600; }
+
+.video-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px 12px;
+}
+
+.empty-state { display: flex; flex-direction: column; align-items: center; padding: 80px 0; color: var(--text-muted); font-size: 14px; }
 .load-more { display: flex; justify-content: center; padding: 32px 0 16px; }
-.load-more-btn { padding: 10px 32px; border-radius: 100px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-2); font-size: 13px; cursor: pointer; transition: var(--transition); font-family: var(--font-body); min-width: 120px; display: flex; align-items: center; justify-content: center; gap: 6px; }
-.load-more-btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text-1); }
+.load-more-btn {
+  padding: 8px 24px; border-radius: 20px; border: none;
+  background: var(--bg-hover); color: var(--text-1); font-size: 13px;
+  cursor: pointer; transition: var(--transition); font-family: var(--font-body);
+}
+.load-more-btn:hover:not(:disabled) { background: #3a3a3a; }
 .load-more-btn:disabled { opacity: 0.6; cursor: default; }
-.spin { font-size: 18px; animation: rotate .8s linear infinite; }
-@keyframes rotate { to { transform: rotate(360deg); } }
 </style>

@@ -2,30 +2,25 @@
   <aside class="sidebar" :class="{ collapsed }">
     <nav class="sidebar-nav">
       <div class="nav-section">
-        <SidebarItem icon="HomeFilled"  label="首页"     to="/"          :collapsed="collapsed" active />
-        <SidebarItem icon="VideoPlay"   label="探索"     to="/explore"   :collapsed="collapsed" />
-        <SidebarItem icon="TrendCharts" label="热门"     to="/trending"  :collapsed="collapsed" />
-        <SidebarItem icon="Star"        label="订阅"     to="/subscribe" :collapsed="collapsed" />
+        <SidebarItem icon="home" label="首页" to="/" :collapsed="collapsed" />
+        <SidebarItem icon="trending" label="热门" to="/trending" :collapsed="collapsed" />
+        <SidebarItem icon="subscriptions" label="订阅" to="/subscriptions" :collapsed="collapsed" />
       </div>
-      <div class="nav-divider" v-if="!collapsed" />
-      <template v-if="userStore.isLoggedIn && !collapsed">
-        <div class="nav-section-label">我的</div>
-        <div class="nav-section">
-          <SidebarItem icon="Clock"      label="历史记录" to="/history"   :collapsed="collapsed" />
-          <SidebarItem icon="Collection" label="收藏夹"   to="/favorites" :collapsed="collapsed" />
-          <SidebarItem icon="Upload"     label="上传视频" to="/upload"    :collapsed="collapsed" />
-        </div>
+
+      <template v-if="userStore.isLoggedIn">
         <div class="nav-divider" />
-      </template>
-      <template v-if="!collapsed">
-        <div class="nav-section-label">分类</div>
         <div class="nav-section">
-          <SidebarItem v-for="cat in categories" :key="cat.label"
-            :icon="cat.icon" :label="cat.label" to="/" :collapsed="collapsed" />
+          <SidebarItem icon="history" label="历史记录" to="/history" :collapsed="collapsed" />
+          <SidebarItem icon="favorites" label="收藏夹" to="/favorites" :collapsed="collapsed" />
+          <SidebarItem icon="upload" label="上传视频" to="/upload" :collapsed="collapsed" />
         </div>
       </template>
+
+      <div class="nav-divider" />
+      <div class="nav-section">
+        <SidebarItem icon="explore" label="探索" to="/" :collapsed="collapsed" />
+      </div>
     </nav>
-    <div class="sidebar-footer" v-if="!collapsed"><p>© 2025 VideoShare</p></div>
   </aside>
 </template>
 
@@ -33,25 +28,18 @@
 import { useUserStore } from '@/stores/user'
 import SidebarItem from './SidebarItem.vue'
 defineProps({ collapsed: { type: Boolean, default: false } })
-const userStore  = useUserStore()
-const categories = [
-  { icon: 'Headset',     label: '音乐' }, { icon: 'Trophy',      label: '体育' },
-  { icon: 'Monitor',     label: '游戏' }, { icon: 'Film',         label: '影视' },
-  { icon: 'Opportunity', label: '科技' }, { icon: 'Food',         label: '美食' },
-]
+const userStore = useUserStore()
 </script>
 
 <style scoped>
 .sidebar {
-  width: 220px; flex-shrink: 0; height: calc(100vh - 56px);
-  position: sticky; top: 56px; overflow-y: auto; overflow-x: hidden;
-  padding: 12px 8px; display: flex; flex-direction: column;
-  transition: width .25s cubic-bezier(.4,0,.2,1); border-right: 1px solid var(--border);
+  width: 240px; flex-shrink: 0; height: calc(100vh - 56px);
+  position: sticky; top: 56px; overflow-y: auto;
+  padding: 12px 0; display: flex; flex-direction: column;
+  transition: width .15s ease; background: var(--bg-base);
 }
-.sidebar.collapsed { width: 68px; }
+.sidebar.collapsed { width: 72px; }
 .sidebar::-webkit-scrollbar { width: 0; }
-.nav-section { display: flex; flex-direction: column; gap: 2px; }
-.nav-section-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); padding: 4px 12px; margin-top: 4px; }
-.nav-divider { height: 1px; background: var(--border); margin: 8px 4px; }
-.sidebar-footer { margin-top: auto; padding: 16px 12px 8px; font-size: 11px; color: var(--text-muted); }
+.nav-section { display: flex; flex-direction: column; padding: 0 8px; }
+.nav-divider { height: 1px; background: var(--border); margin: 8px 0; }
 </style>
