@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.videoshare.web.mapper.PlaylistVideoMapper">
+
+    <resultMap id="PlaylistVideoMap" type="com.videoshare.common.entity.PlaylistVideo">
+        <id     column="id"           property="id"/>
+        <result column="playlist_id"  property="playlistId"/>
+        <result column="video_id"     property="videoId"/>
+        <result column="sort_order"   property="sortOrder"/>
+        <result column="create_time"  property="createTime"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.videoshare.common.entity.PlaylistVideo"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO playlist_video (playlist_id, video_id, sort_order, create_time)
+        VALUES (#{playlistId}, #{videoId}, #{sortOrder}, NOW())
+    </insert>
+
+    <delete id="deleteByPlaylistIdAndVideoId">
+        DELETE FROM playlist_video
+        WHERE playlist_id = #{playlistId} AND video_id = #{videoId}
+    </delete>
+
+    <delete id="deleteByPlaylistId">
+        DELETE FROM playlist_video WHERE playlist_id = #{playlistId}
+    </delete>
+
+    <select id="selectByPlaylistId" resultMap="PlaylistVideoMap">
+        SELECT * FROM playlist_video
+        WHERE playlist_id = #{playlistId}
+        ORDER BY sort_order ASC, create_time ASC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="countByPlaylistId" resultType="Integer">
+        SELECT COUNT(1) FROM playlist_video WHERE playlist_id = #{playlistId}
+    </select>
+
+    <select id="selectMaxSortOrder" resultType="Integer">
+        SELECT MAX(sort_order) FROM playlist_video WHERE playlist_id = #{playlistId}
+    </select>
+
+    <update id="updateSortOrder">
+        UPDATE playlist_video SET sort_order = #{sortOrder} WHERE id = #{id}
+    </update>
+
+    <select id="countByPlaylistIdAndVideoId" resultType="Integer">
+        SELECT COUNT(1) FROM playlist_video
+        WHERE playlist_id = #{playlistId} AND video_id = #{videoId}
+    </select>
+
+</mapper>
