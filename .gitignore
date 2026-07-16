@@ -27,7 +27,11 @@ Thumbs.db
 **/*.log
 **/.mvn/wrapper/
 
+# --- Claude Code ---
+.claude/
+
 # --- Temporary & Build ---
+DOCS/
 .temp/
 .cache/
 out/
