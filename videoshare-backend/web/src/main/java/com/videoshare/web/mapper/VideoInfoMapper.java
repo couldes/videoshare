@@ -22,6 +22,9 @@ public interface VideoInfoMapper {
     /** 按 ID 查单个视频 */
     VideoInfo selectByVideoId(@Param("videoId") String videoId);
 
+    /** 批量查视频（按 videoId 列表） */
+    List<VideoInfo> selectByVideoIds(@Param("videoIds") List<String> videoIds);
+
     /** 播放量 +1（高频操作，用 UPDATE 直接写库，实际项目可用 Redis 缓存） */
     Integer increaseViewCount(@Param("videoId") String videoId);
 

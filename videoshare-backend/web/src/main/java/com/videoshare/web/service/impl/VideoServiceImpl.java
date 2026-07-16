@@ -13,6 +13,7 @@ import com.videoshare.web.mapper.UserActionMapper;
 import com.videoshare.web.mapper.UserInfoMapper;
 import com.videoshare.web.mapper.VideoInfoMapper;
 import com.videoshare.web.service.VideoService;
+import com.videoshare.web.service.WatchHistoryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ public class VideoServiceImpl implements VideoService {
     @Resource private UserInfoMapper   userInfoMapper;
     @Resource private UserActionMapper userActionMapper;
     @Resource private com.videoshare.web.mapper.UserFollowMapper userFollowMapper;
+    @Resource private WatchHistoryService watchHistoryService;
 
     // ============================================================
     //  视频列表（首页 + 个人主页通用）
@@ -78,6 +80,11 @@ public class VideoServiceImpl implements VideoService {
         videoInfoMapper.increaseViewCount(videoId);
         video.setViewCount(video.getViewCount() + 1);
         syncHeat(videoId);
+
+        // 记录观看历史
+        if (currentUserId != null) {
+            watchHistoryService.recordWatch(currentUserId, videoId);
+        }
 
         UserInfo author = userInfoMapper.selectByUserId(video.getUserId());
         return convertToVO(video, author);

@@ -90,6 +90,15 @@
         SELECT * FROM video_info WHERE video_id = #{videoId}
     </select>
 
+    <!-- 批量查视频 -->
+    <select id="selectByVideoIds" resultMap="VideoInfoMap">
+        SELECT * FROM video_info
+        WHERE video_id IN
+        <foreach collection="videoIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <!-- 播放量 +1 -->
     <update id="increaseViewCount">
         UPDATE video_info SET view_count = view_count + 1 WHERE video_id = #{videoId}
