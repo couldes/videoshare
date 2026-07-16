@@ -127,6 +127,7 @@ public class CommentServiceImpl implements CommentService {
         // 4. 更新视频评论数（只有顶级评论才+1，回复不计入）
         if (pCommentId == null || pCommentId == 0) {
             videoInfoMapper.updateCommentCount(videoId, 1);
+            syncVideoHeat(videoId);
         }
 
         // 5. 返回刚插入的评论VO（含昵称，供前端立即展示）
@@ -196,6 +197,18 @@ public class CommentServiceImpl implements CommentService {
                 .map(userInfoMapper::selectByUserId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(UserInfo::getUserId, u -> u, (a, b) -> a));
+    }
+
+    /** 同步视频热度分 */
+    private void syncVideoHeat(String videoId) {
+        com.videoshare.common.entity.VideoInfo v = videoInfoMapper.selectByVideoId(videoId);
+        if (v != null) {
+            double heat = v.getViewCount() * 1.0
+                    + v.getLikeCount() * 5.0
+                    + v.getCommentCount() * 10.0
+                    + v.getFavoriteCount() * 8.0;
+            videoInfoMapper.updateHeat(videoId, heat);
+        }
     }
 
     /** CommentInfo → CommentVO */

@@ -42,4 +42,21 @@ public interface VideoInfoMapper {
 
     /** 统计某用户所有视频的被点赞总数 */
     Long sumLikeCountByUserId(@Param("userId") String userId);
+
+    /** 热门列表 — 按热度降序 */
+    List<VideoInfo> selectTrendingList(@Param("offset") int offset, @Param("limit") int limit);
+
+    /** 订阅列表 — 关注者视频按时间倒序 */
+    List<VideoInfo> selectSubscriptionVideos(@Param("userId") String userId,
+                                             @Param("offset") int offset,
+                                             @Param("limit") int limit);
+
+    /** 订阅视频总数 */
+    Integer countSubscriptionVideos(@Param("userId") String userId);
+
+    /** 更新单条热度分 */
+    Integer updateHeat(@Param("videoId") String videoId, @Param("heat") double heat);
+
+    /** 全量重算热度（定时任务用）*/
+    Integer updateAllHeat();
 }

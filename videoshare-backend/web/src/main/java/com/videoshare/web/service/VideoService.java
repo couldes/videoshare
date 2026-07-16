@@ -17,4 +17,10 @@ public interface VideoService {
     PaginationResultVO<VideoInfoVO> getUserVideos(String userId, Integer pageNum, Integer pageSize);
     boolean toggleAction(String userId, String videoId, Integer actionType);
     Map<String, Boolean> checkUserAction(String userId, String videoId);
+
+    PaginationResultVO<VideoInfoVO> getTrendingList(Integer pageNum, Integer pageSize);
+
+    PaginationResultVO<VideoInfoVO> getSubscriptionVideos(String userId, Integer pageNum, Integer pageSize);
+
+    PaginationResultVO<VideoInfoVO> searchVideos(String keyword, String orderBy, Integer pageNum, Integer pageSize);
 }

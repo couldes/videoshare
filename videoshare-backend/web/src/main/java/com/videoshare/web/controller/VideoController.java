@@ -8,11 +8,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 
 /**
  * 视频相关接口
  *
- * 接口清单（前端对应 packages/api/src/video.js）：
+ * 接口清单：
+ *   GET  /video/trending      → 热门视频榜单
+ *   GET  /video/subscriptions → 订阅 Feed（需登录）
+ *   GET  /video/search        → 全文搜索
  *   GET  /video/list          → 首页视频列表（分页+分类）
  *   GET  /video/{videoId}     → 视频详情（含播放地址）
  *   POST /video/upload        → 上传视频（需登录）
@@ -27,6 +31,37 @@ public class VideoController extends ABaseController {
 
     @Resource
     private VideoService videoService;
+
+    /** 热门视频榜单 */
+    @GetMapping("/trending")
+    public ResponseVO getTrendingList(
+            @RequestParam(defaultValue = "1")  Integer pageNum,
+            @RequestParam(defaultValue = "20") Integer pageSize) {
+        return getSuccessResponseVO(videoService.getTrendingList(pageNum, pageSize));
+    }
+
+    /** 订阅 Feed — 关注者的视频时间线 */
+    @GetMapping("/subscriptions")
+    public ResponseVO getSubscriptionVideos(
+            @RequestParam(defaultValue = "1")  Integer pageNum,
+            @RequestParam(defaultValue = "20") Integer pageSize,
+            HttpServletRequest request) {
+        String userId = getUserIdFromToken(request);
+        if (userId == null) {
+            return getSuccessResponseVO(Collections.emptyList());
+        }
+        return getSuccessResponseVO(videoService.getSubscriptionVideos(userId, pageNum, pageSize));
+    }
+
+    /** 全文搜索 */
+    @GetMapping("/search")
+    public ResponseVO searchVideos(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "relevance") String orderBy,
+            @RequestParam(defaultValue = "1")  Integer pageNum,
+            @RequestParam(defaultValue = "20") Integer pageSize) {
+        return getSuccessResponseVO(videoService.searchVideos(keyword, orderBy, pageNum, pageSize));
+    }
 
     /** 首页视频列表（分页 + 分类筛选）*/
     @GetMapping("/list")

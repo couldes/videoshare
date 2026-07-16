@@ -20,6 +20,7 @@ public class VideoInfo {
     private Integer likeCount;      // 点赞数
     private Integer commentCount;   // 评论数
     private Integer favoriteCount;  // 收藏数
+    private Double  heat;           // 热度分
     /** 0=审核中 1=已发布 2=已下架 */
     private Integer status;
     private Date    createTime;
@@ -51,6 +52,8 @@ public class VideoInfo {
     public void    setCommentCount(Integer v) { this.commentCount = v; }
     public Integer getFavoriteCount() { return favoriteCount; }
     public void    setFavoriteCount(Integer v){ this.favoriteCount = v; }
+    public Double  getHeat()          { return heat; }
+    public void    setHeat(Double v)         { this.heat = v; }
     public Integer getStatus()        { return status; }
     public void    setStatus(Integer v)       { this.status = v; }
     public Date    getCreateTime()    { return createTime; }

@@ -40,6 +40,7 @@ public class VideoServiceImpl implements VideoService {
     @Resource private VideoInfoMapper  videoInfoMapper;
     @Resource private UserInfoMapper   userInfoMapper;
     @Resource private UserActionMapper userActionMapper;
+    @Resource private com.videoshare.web.mapper.UserFollowMapper userFollowMapper;
 
     // ============================================================
     //  视频列表（首页 + 个人主页通用）
@@ -76,6 +77,7 @@ public class VideoServiceImpl implements VideoService {
         // 播放量 +1（简化版，高并发场景应改为 Redis 计数 + 定时落库）
         videoInfoMapper.increaseViewCount(videoId);
         video.setViewCount(video.getViewCount() + 1);
+        syncHeat(videoId);
 
         UserInfo author = userInfoMapper.selectByUserId(video.getUserId());
         return convertToVO(video, author);
@@ -161,7 +163,6 @@ public class VideoServiceImpl implements VideoService {
 
         if (willAdd) {
             userActionMapper.insert(userId, videoId, actionType);
-            // 同步更新视频计数
             if (actionType == 1) videoInfoMapper.updateLikeCount(videoId, 1);
             if (actionType == 2) videoInfoMapper.updateFavoriteCount(videoId, 1);
         } else {
@@ -169,6 +170,7 @@ public class VideoServiceImpl implements VideoService {
             if (actionType == 1) videoInfoMapper.updateLikeCount(videoId, -1);
             if (actionType == 2) videoInfoMapper.updateFavoriteCount(videoId, -1);
         }
+        syncHeat(videoId);
         return willAdd;
     }
 
@@ -186,6 +188,66 @@ public class VideoServiceImpl implements VideoService {
         result.put("liked",     userActionMapper.checkAction(userId, videoId, 1) > 0);
         result.put("favorited", userActionMapper.checkAction(userId, videoId, 2) > 0);
         return result;
+    }
+
+    // ============================================================
+    //  热门视频列表
+    // ============================================================
+    @Override
+    public PaginationResultVO<VideoInfoVO> getTrendingList(Integer pageNum, Integer pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+
+        List<VideoInfo> list  = videoInfoMapper.selectTrendingList(offset, pageSize);
+        VideoQuery     countQuery = new VideoQuery();
+        countQuery.setStatus(1);
+        Integer        total = videoInfoMapper.countVideos(countQuery);
+
+        Set<String> userIds = list.stream().map(VideoInfo::getUserId).collect(Collectors.toSet());
+        Map<String, UserInfo> userMap = batchGetUsers(userIds);
+
+        List<VideoInfoVO> voList = list.stream()
+                .map(v -> convertToVO(v, userMap.get(v.getUserId())))
+                .collect(Collectors.toList());
+
+        return new PaginationResultVO<>(total, pageSize, pageNum, voList);
+    }
+
+    // ============================================================
+    //  订阅 Feed — 关注者的视频时间线
+    // ============================================================
+    @Override
+    public PaginationResultVO<VideoInfoVO> getSubscriptionVideos(String userId,
+                                                                  Integer pageNum,
+                                                                  Integer pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+
+        List<VideoInfo> list  = videoInfoMapper.selectSubscriptionVideos(userId, offset, pageSize);
+        Integer         total = videoInfoMapper.countSubscriptionVideos(userId);
+
+        Set<String> userIds = list.stream().map(VideoInfo::getUserId).collect(Collectors.toSet());
+        Map<String, UserInfo> userMap = batchGetUsers(userIds);
+
+        List<VideoInfoVO> voList = list.stream()
+                .map(v -> convertToVO(v, userMap.get(v.getUserId())))
+                .collect(Collectors.toList());
+
+        return new PaginationResultVO<>(total, pageSize, pageNum, voList);
+    }
+
+    // ============================================================
+    //  全文搜索（当前使用 MySQL LIKE，ES 集成待 ES 环境就绪后启用）
+    // ============================================================
+    @Override
+    public PaginationResultVO<VideoInfoVO> searchVideos(String keyword, String orderBy,
+                                                         Integer pageNum, Integer pageSize) {
+        VideoQuery query = new VideoQuery();
+        query.setKeyword(keyword);
+        query.setPageNum(pageNum);
+        query.setPageSize(pageSize);
+        if ("view_count".equals(orderBy)) {
+            query.setOrderBy("view_count");
+        }
+        return getVideoList(query);
     }
 
     // ============================================================
@@ -224,6 +286,7 @@ public class VideoServiceImpl implements VideoService {
         vo.setLikeCount(v.getLikeCount());
         vo.setCommentCount(v.getCommentCount());
         vo.setFavoriteCount(v.getFavoriteCount());
+        vo.setHeat(v.getHeat());
         vo.setStatus(v.getStatus());
         vo.setCreateTime(v.getCreateTime());
 
@@ -235,4 +298,17 @@ public class VideoServiceImpl implements VideoService {
         }
         return vo;
     }
+
+    /** 同步热度分（互动后调用）*/
+    private void syncHeat(String videoId) {
+        VideoInfo v = videoInfoMapper.selectByVideoId(videoId);
+        if (v != null) {
+            double heat = v.getViewCount() * 1.0
+                    + v.getLikeCount() * 5.0
+                    + v.getCommentCount() * 10.0
+                    + v.getFavoriteCount() * 8.0;
+            videoInfoMapper.updateHeat(videoId, heat);
+        }
+    }
+
 }

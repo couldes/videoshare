@@ -9,6 +9,12 @@ spring:
   application:
     name: videoshare-admin
 
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+
   # 文件上传配置
   servlet:
     multipart:
@@ -39,12 +45,17 @@ spring:
     password:
     database: 0
     timeout: 5000ms
-    lettuce: # SpringBoot 2.x/3.x 默认使用 lettuce，建议用这个代替 jedis
+    lettuce:
       pool:
         max-active: 20
         max-idle: 10
         min-idle: 2
         max-wait: -1ms
+
+  # Elasticsearch 配置
+  elasticsearch:
+    rest:
+      uris: http://127.0.0.1:9200
 
   # JSON 序列化优化（解决日期格式化问题）
   jackson:

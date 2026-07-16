@@ -21,6 +21,7 @@ public class VideoInfoVO {
     private Integer likeCount;
     private Integer commentCount;
     private Integer favoriteCount;
+    private Double  heat;          // 热度分
     private Integer status;
     private Date    createTime;
 
@@ -53,6 +54,8 @@ public class VideoInfoVO {
     public void    setCommentCount(Integer v)  { this.commentCount = v; }
     public Integer getFavoriteCount()  { return favoriteCount; }
     public void    setFavoriteCount(Integer v) { this.favoriteCount = v; }
+    public Double  getHeat()           { return heat; }
+    public void    setHeat(Double v)          { this.heat = v; }
     public Integer getStatus()         { return status; }
     public void    setStatus(Integer v)        { this.status = v; }
     public Date    getCreateTime()     { return createTime; }

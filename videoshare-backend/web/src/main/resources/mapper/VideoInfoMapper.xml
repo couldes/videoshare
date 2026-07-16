@@ -20,6 +20,7 @@
         <result column="like_count"     property="likeCount"/>
         <result column="comment_count"  property="commentCount"/>
         <result column="favorite_count" property="favoriteCount"/>
+        <result column="heat"           property="heat"/>
         <result column="status"         property="status"/>
         <result column="create_time"    property="createTime"/>
         <result column="update_time"    property="updateTime"/>
@@ -62,11 +63,11 @@
         INSERT INTO video_info
         (video_id, user_id, title, description, cover_url, video_url,
         duration, category, tags, view_count, like_count, comment_count,
-        favorite_count, status, create_time)
+        favorite_count, heat, status, create_time)
         VALUES
         (#{videoId}, #{userId}, #{title}, #{description}, #{coverUrl}, #{videoUrl},
         #{duration}, #{category}, #{tags}, 0, 0, 0,
-        0, #{status}, NOW())
+        0, 0, #{status}, NOW())
     </insert>
 
     <!-- 分页查询 -->
@@ -131,5 +132,45 @@
         FROM video_info
         WHERE user_id = #{userId} AND status = 1
     </select>
+
+    <!-- 热门列表 — 按热度降序 -->
+    <select id="selectTrendingList" resultMap="VideoInfoMap">
+        SELECT * FROM video_info
+        WHERE status = 1
+        ORDER BY heat DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 订阅列表 — 关注者视频按时间倒序 -->
+    <select id="selectSubscriptionVideos" resultMap="VideoInfoMap">
+        SELECT v.*
+        FROM video_info v
+        JOIN user_follow uf ON v.user_id = uf.follow_user_id
+        WHERE uf.user_id = #{userId}
+          AND v.status = 1
+        ORDER BY v.create_time DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 订阅视频总数 -->
+    <select id="countSubscriptionVideos" resultType="Integer">
+        SELECT COUNT(1)
+        FROM video_info v
+        JOIN user_follow uf ON v.user_id = uf.follow_user_id
+        WHERE uf.user_id = #{userId}
+          AND v.status = 1
+    </select>
+
+    <!-- 更新单条热度分 -->
+    <update id="updateHeat">
+        UPDATE video_info SET heat = #{heat} WHERE video_id = #{videoId}
+    </update>
+
+    <!-- 全量重算热度（定时任务用）-->
+    <update id="updateAllHeat">
+        UPDATE video_info
+        SET heat = view_count * 1 + like_count * 5 + comment_count * 10 + favorite_count * 8
+        WHERE status = 1
+    </update>
 
 </mapper>
