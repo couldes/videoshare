@@ -31,4 +31,10 @@ public interface WatchHistoryMapper {
 
     Integer cleanupExcess(@Param("userId") String userId,
                           @Param("keepCount") int keepCount);
+
+    /**
+     * 统计创作者近 N 天视频被观看次数
+     */
+    Long countRecentViewsForCreator(@Param("userId") String userId,
+                                    @Param("sinceDays") int sinceDays);
 }

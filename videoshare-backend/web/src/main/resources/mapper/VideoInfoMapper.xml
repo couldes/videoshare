@@ -194,4 +194,32 @@
         WHERE video_id = #{videoId}
     </update>
 
+    <!-- 某用户所有视频总播放量 -->
+    <select id="sumViewsByUserId" resultType="Long">
+        SELECT IFNULL(SUM(view_count), 0) FROM video_info WHERE user_id = #{userId}
+    </select>
+
+    <!-- 某用户所有视频总点赞数 -->
+    <select id="sumLikesByUserId" resultType="Long">
+        SELECT IFNULL(SUM(like_count), 0) FROM video_info WHERE user_id = #{userId}
+    </select>
+
+    <!-- 某用户所有视频总评论数 -->
+    <select id="sumCommentsByUserId" resultType="Long">
+        SELECT IFNULL(SUM(comment_count), 0) FROM video_info WHERE user_id = #{userId}
+    </select>
+
+    <!-- 某用户所有视频数（不限状态） -->
+    <select id="countByUserIdAll" resultType="Long">
+        SELECT COUNT(1) FROM video_info WHERE user_id = #{userId}
+    </select>
+
+    <!-- 某用户视频按播放量降序分页 -->
+    <select id="selectVideoStats" resultMap="VideoInfoMap">
+        SELECT * FROM video_info
+        WHERE user_id = #{userId}
+        ORDER BY view_count DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
 </mapper>

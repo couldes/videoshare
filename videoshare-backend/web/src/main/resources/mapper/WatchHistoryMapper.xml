@@ -67,4 +67,13 @@
           )
     </delete>
 
+    <!-- 创作者近 N 天视频被观看次数 -->
+    <select id="countRecentViewsForCreator" resultType="Long">
+        SELECT COUNT(1)
+        FROM watch_history wh
+        JOIN video_info v ON wh.video_id = v.video_id
+        WHERE v.user_id = #{userId}
+          AND wh.create_time >= DATE_SUB(NOW(), INTERVAL #{sinceDays} DAY)
+    </select>
+
 </mapper>

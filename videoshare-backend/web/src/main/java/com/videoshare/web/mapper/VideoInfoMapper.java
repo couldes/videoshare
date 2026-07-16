@@ -69,4 +69,23 @@ public interface VideoInfoMapper {
                                   @Param("duration") Integer duration,
                                   @Param("coverUrl") String coverUrl,
                                   @Param("status") Integer status);
+
+    // ---- 创作者分析查询 ----
+
+    /** 某用户所有视频的总播放量 */
+    Long sumViewsByUserId(@Param("userId") String userId);
+
+    /** 某用户所有视频的总点赞数 */
+    Long sumLikesByUserId(@Param("userId") String userId);
+
+    /** 某用户所有视频的总评论数 */
+    Long sumCommentsByUserId(@Param("userId") String userId);
+
+    /** 某用户所有视频数（不限状态） */
+    Long countByUserIdAll(@Param("userId") String userId);
+
+    /** 某用户视频按播放量降序分页 */
+    List<VideoInfo> selectVideoStats(@Param("userId") String userId,
+                                     @Param("offset") int offset,
+                                     @Param("limit") int limit);
 }

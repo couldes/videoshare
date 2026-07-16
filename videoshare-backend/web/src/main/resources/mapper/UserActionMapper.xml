@@ -57,4 +57,14 @@
         WHERE action_type IN (1, 2)
     </select>
 
+    <!-- 创作者近 N 天收到的点赞数 -->
+    <select id="countRecentLikesForCreator" resultType="Long">
+        SELECT COUNT(1)
+        FROM user_action ua
+        JOIN video_info v ON ua.target_id = v.video_id
+        WHERE v.user_id = #{userId}
+          AND ua.action_type = 1
+          AND ua.create_time >= DATE_SUB(NOW(), INTERVAL #{sinceDays} DAY)
+    </select>
+
 </mapper>

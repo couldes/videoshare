@@ -54,4 +54,10 @@ public interface UserActionMapper {
      * 统计用户收藏总数
      */
     Integer countFavorites(@Param("userId") String userId);
+
+    /**
+     * 统计创作者近 N 天收到的点赞数
+     */
+    Long countRecentLikesForCreator(@Param("userId") String userId,
+                                    @Param("sinceDays") int sinceDays);
 }
