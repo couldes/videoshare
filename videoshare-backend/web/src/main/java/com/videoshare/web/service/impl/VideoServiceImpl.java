@@ -13,6 +13,7 @@ import com.videoshare.web.mapper.UserActionMapper;
 import com.videoshare.web.mapper.UserInfoMapper;
 import com.videoshare.web.mapper.VideoInfoMapper;
 import com.videoshare.web.service.NotificationService;
+import com.videoshare.web.service.TranscodeService;
 import com.videoshare.web.service.VideoService;
 import com.videoshare.web.service.WatchHistoryService;
 import com.videoshare.web.component.RedisComponent;
@@ -41,6 +42,19 @@ public class VideoServiceImpl implements VideoService {
                 : projectFolder + "/videos/";
     }
 
+    private String getHlsDir() {
+        return projectFolder.endsWith("/") || projectFolder.endsWith("\\")
+                ? projectFolder + "hls/"
+                : projectFolder + "/hls/";
+    }
+
+    /** 从 /video/resource/xxx.mp4 中提取 xxx.mp4 */
+    private String extractFileName(String videoUrl) {
+        if (videoUrl == null) return "";
+        int idx = videoUrl.lastIndexOf("/");
+        return idx >= 0 ? videoUrl.substring(idx + 1) : videoUrl;
+    }
+
     @Resource private VideoInfoMapper     videoInfoMapper;
     @Resource private UserInfoMapper      userInfoMapper;
     @Resource private UserActionMapper    userActionMapper;
@@ -48,6 +62,7 @@ public class VideoServiceImpl implements VideoService {
     @Resource private WatchHistoryService watchHistoryService;
     @Resource private RedisComponent      redisComponent;
     @Resource private NotificationService notificationService;
+    @Resource private TranscodeService transcodeService;
 
     // ============================================================
     //  视频列表（首页 + 个人主页通用）
@@ -55,7 +70,7 @@ public class VideoServiceImpl implements VideoService {
     @Override
     public PaginationResultVO<VideoInfoVO> getVideoList(VideoQuery query) {
         // 默认只查已发布
-        if (query.getStatus() == null) query.setStatus(1);
+        if (query.getStatus() == null) query.setStatus(2);
 
         List<VideoInfo> list  = videoInfoMapper.selectVideoList(query);
         Integer         total = videoInfoMapper.countVideos(query);
@@ -78,7 +93,7 @@ public class VideoServiceImpl implements VideoService {
     @Transactional(rollbackFor = Exception.class)
     public VideoInfoVO getVideoDetail(String videoId, String currentUserId) {
         VideoInfo video = videoInfoMapper.selectByVideoId(videoId);
-        if (video == null || video.getStatus() != 1) {
+        if (video == null || video.getStatus() < 2) {
             throw new BusinessException("视频不存在或已下架");
         }
         // 播放量 +1（简化版，高并发场景应改为 Redis 计数 + 定时落库）
@@ -139,12 +154,19 @@ public class VideoServiceImpl implements VideoService {
         video.setVideoUrl(videoUrl);
         video.setCategory(category);
         video.setTags(tags);
-        video.setStatus(1); // 直接发布（实际项目可加审核流程 status=0）
+        video.setStatus(0); // 处理中，转码完成后 → 2
         video.setViewCount(0L);
         video.setLikeCount(0);
         video.setCommentCount(0);
         video.setFavoriteCount(0);
         videoInfoMapper.insert(video);
+
+        // 触发异步转码
+        String inputPath = getUploadDir() + extractFileName(videoUrl);
+        String outputDir = getHlsDir() + video.getVideoId() + "/";
+        transcodeService.createJob(video.getVideoId(), inputPath, outputDir);
+        boolean needCover = coverUrl == null || coverUrl.isEmpty();
+        transcodeService.transcodeAsync(video.getVideoId(), inputPath, outputDir, needCover);
     }
 
     // ============================================================
@@ -158,7 +180,7 @@ public class VideoServiceImpl implements VideoService {
         query.setUserId(userId);
         query.setPageNum(pageNum);
         query.setPageSize(pageSize);
-        query.setStatus(1);
+        query.setStatus(2);
         return getVideoList(query);
     }
 
@@ -220,7 +242,7 @@ public class VideoServiceImpl implements VideoService {
 
         List<VideoInfo> list  = videoInfoMapper.selectTrendingList(offset, pageSize);
         VideoQuery     countQuery = new VideoQuery();
-        countQuery.setStatus(1);
+        countQuery.setStatus(2);
         Integer        total = videoInfoMapper.countVideos(countQuery);
 
         Set<String> userIds = list.stream().map(VideoInfo::getUserId).collect(Collectors.toSet());

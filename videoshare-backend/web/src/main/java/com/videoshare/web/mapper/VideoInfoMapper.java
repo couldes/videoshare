@@ -62,4 +62,11 @@ public interface VideoInfoMapper {
 
     /** 全量重算热度（定时任务用）*/
     Integer updateAllHeat();
+
+    /** 转码完成后更新视频信息 */
+    Integer updateTranscodeResult(@Param("videoId") String videoId,
+                                  @Param("videoUrl") String videoUrl,
+                                  @Param("duration") Integer duration,
+                                  @Param("coverUrl") String coverUrl,
+                                  @Param("status") Integer status);
 }

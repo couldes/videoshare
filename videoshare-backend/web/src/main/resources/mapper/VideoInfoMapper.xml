@@ -34,7 +34,7 @@
                 AND v.status = #{status}
             </if>
             <if test="status == null">
-                AND v.status = 1
+                AND v.status = 2
             </if>
             <if test="category != null">
                 AND v.category = #{category}
@@ -132,20 +132,20 @@
 
     <!-- 按用户统计视频数 -->
     <select id="countByUserId" resultType="Long">
-        SELECT COUNT(1) FROM video_info WHERE user_id = #{userId} AND status = 1
+        SELECT COUNT(1) FROM video_info WHERE user_id = #{userId} AND status = 2
     </select>
 
     <!-- 按用户统计被点赞总数 -->
     <select id="sumLikeCountByUserId" resultType="Long">
         SELECT IFNULL(SUM(like_count), 0)
         FROM video_info
-        WHERE user_id = #{userId} AND status = 1
+        WHERE user_id = #{userId} AND status = 2
     </select>
 
     <!-- 热门列表 — 按热度降序 -->
     <select id="selectTrendingList" resultMap="VideoInfoMap">
         SELECT * FROM video_info
-        WHERE status = 1
+        WHERE status = 2
         ORDER BY heat DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
@@ -156,7 +156,7 @@
         FROM video_info v
         JOIN user_follow uf ON v.user_id = uf.follow_user_id
         WHERE uf.user_id = #{userId}
-          AND v.status = 1
+          AND v.status = 2
         ORDER BY v.create_time DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
@@ -167,7 +167,7 @@
         FROM video_info v
         JOIN user_follow uf ON v.user_id = uf.follow_user_id
         WHERE uf.user_id = #{userId}
-          AND v.status = 1
+          AND v.status = 2
     </select>
 
     <!-- 更新单条热度分 -->
@@ -179,7 +179,19 @@
     <update id="updateAllHeat">
         UPDATE video_info
         SET heat = view_count * 1 + like_count * 5 + comment_count * 10 + favorite_count * 8
-        WHERE status = 1
+        WHERE status = 2
+    </update>
+
+    <!-- 转码完成后更新视频信息 -->
+    <update id="updateTranscodeResult">
+        UPDATE video_info
+        <set>
+            video_url = #{videoUrl},
+            duration  = #{duration},
+            status    = #{status},
+            <if test="coverUrl != null">cover_url = #{coverUrl},</if>
+        </set>
+        WHERE video_id = #{videoId}
     </update>
 
 </mapper>
