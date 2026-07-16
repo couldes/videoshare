@@ -12,6 +12,7 @@ import com.videoshare.common.vo.VideoInfoVO;
 import com.videoshare.web.mapper.UserActionMapper;
 import com.videoshare.web.mapper.UserInfoMapper;
 import com.videoshare.web.mapper.VideoInfoMapper;
+import com.videoshare.web.service.NotificationService;
 import com.videoshare.web.service.VideoService;
 import com.videoshare.web.service.WatchHistoryService;
 import com.videoshare.web.component.RedisComponent;
@@ -40,12 +41,13 @@ public class VideoServiceImpl implements VideoService {
                 : projectFolder + "/videos/";
     }
 
-    @Resource private VideoInfoMapper  videoInfoMapper;
-    @Resource private UserInfoMapper   userInfoMapper;
-    @Resource private UserActionMapper userActionMapper;
+    @Resource private VideoInfoMapper     videoInfoMapper;
+    @Resource private UserInfoMapper      userInfoMapper;
+    @Resource private UserActionMapper    userActionMapper;
     @Resource private com.videoshare.web.mapper.UserFollowMapper userFollowMapper;
     @Resource private WatchHistoryService watchHistoryService;
-    @Resource private RedisComponent redisComponent;
+    @Resource private RedisComponent      redisComponent;
+    @Resource private NotificationService notificationService;
 
     // ============================================================
     //  视频列表（首页 + 个人主页通用）
@@ -175,6 +177,15 @@ public class VideoServiceImpl implements VideoService {
             userActionMapper.insert(userId, videoId, actionType);
             if (actionType == 1) videoInfoMapper.updateLikeCount(videoId, 1);
             if (actionType == 2) videoInfoMapper.updateFavoriteCount(videoId, 1);
+
+            // 点赞通知
+            if (actionType == 1) {
+                VideoInfo video = videoInfoMapper.selectByVideoId(videoId);
+                if (video != null && !userId.equals(video.getUserId())) {
+                    notificationService.sendNotification(
+                            video.getUserId(), userId, "like", videoId, "点赞了你的视频");
+                }
+            }
         } else {
             userActionMapper.delete(userId, videoId, actionType);
             if (actionType == 1) videoInfoMapper.updateLikeCount(videoId, -1);

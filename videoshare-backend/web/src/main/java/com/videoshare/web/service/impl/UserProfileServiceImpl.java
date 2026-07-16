@@ -13,6 +13,7 @@ import com.videoshare.web.mapper.UserActionMapper;
 import com.videoshare.web.mapper.UserFollowMapper;
 import com.videoshare.web.mapper.UserInfoMapper;
 import com.videoshare.web.mapper.VideoInfoMapper;
+import com.videoshare.web.service.NotificationService;
 import com.videoshare.web.service.UserProfileService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +25,11 @@ import java.util.stream.Collectors;
 @Service
 public class UserProfileServiceImpl implements UserProfileService {
 
-    @Resource private UserInfoMapper   userInfoMapper;
-    @Resource private UserFollowMapper userFollowMapper;
-    @Resource private UserActionMapper userActionMapper;
-    @Resource private VideoInfoMapper  videoInfoMapper;
+    @Resource private UserInfoMapper      userInfoMapper;
+    @Resource private UserFollowMapper    userFollowMapper;
+    @Resource private UserActionMapper    userActionMapper;
+    @Resource private VideoInfoMapper     videoInfoMapper;
+    @Resource private NotificationService notificationService;
 
     // ============================================================
     //  个人主页信息
@@ -81,6 +83,8 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         if (willFollow) {
             userFollowMapper.insert(userId, followUserId);
+            notificationService.sendNotification(
+                    followUserId, userId, "follow", null, "关注了你");
         } else {
             userFollowMapper.delete(userId, followUserId);
         }

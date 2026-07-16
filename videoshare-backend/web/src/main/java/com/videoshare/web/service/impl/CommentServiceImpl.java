@@ -3,6 +3,7 @@ package com.videoshare.web.service.impl;
 
 import com.videoshare.common.entity.CommentInfo;
 import com.videoshare.common.entity.UserInfo;
+import com.videoshare.common.entity.VideoInfo;
 import com.videoshare.common.exception.BusinessException;
 import com.videoshare.common.query.CommentQuery;
 import com.videoshare.common.vo.CommentVO;
@@ -12,6 +13,7 @@ import com.videoshare.web.mapper.UserActionMapper;
 import com.videoshare.web.mapper.UserInfoMapper;
 import com.videoshare.web.mapper.VideoInfoMapper;
 import com.videoshare.web.service.CommentService;
+import com.videoshare.web.service.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +24,11 @@ import java.util.stream.Collectors;
 @Service
 public class CommentServiceImpl implements CommentService {
 
-    @Resource private CommentMapper    commentMapper;
-    @Resource private VideoInfoMapper  videoInfoMapper;
-    @Resource private UserInfoMapper   userInfoMapper;
-    @Resource private UserActionMapper userActionMapper;
+    @Resource private CommentMapper       commentMapper;
+    @Resource private VideoInfoMapper     videoInfoMapper;
+    @Resource private UserInfoMapper      userInfoMapper;
+    @Resource private UserActionMapper    userActionMapper;
+    @Resource private NotificationService notificationService;
 
     // ============================================================
     //  评论列表（顶级评论分页，每条顶级携带最多3条回复）
@@ -130,7 +133,23 @@ public class CommentServiceImpl implements CommentService {
             syncVideoHeat(videoId);
         }
 
-        // 5. 返回刚插入的评论VO（含昵称，供前端立即展示）
+        // 5. 发送通知
+        VideoInfo video = videoInfoMapper.selectByVideoId(videoId);
+        if (video != null) {
+            // 评论通知：通知视频作者
+            if (!userId.equals(video.getUserId())) {
+                notificationService.sendNotification(
+                        video.getUserId(), userId, "comment", videoId, content);
+            }
+            // 回复通知：通知被回复者
+            if (pCommentId != null && pCommentId > 0 && replyUserId != null
+                    && !userId.equals(replyUserId)) {
+                notificationService.sendNotification(
+                        replyUserId, userId, "reply", videoId, content);
+            }
+        }
+
+        // 6. 返回刚插入的评论VO（含昵称，供前端立即展示）
         UserInfo user = userInfoMapper.selectByUserId(userId);
         CommentVO vo = toVO(comment, Collections.singletonMap(userId, user));
         // 如果是回复，填充被回复者昵称
