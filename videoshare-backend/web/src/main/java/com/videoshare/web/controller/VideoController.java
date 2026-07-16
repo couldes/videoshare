@@ -63,6 +63,16 @@ public class VideoController extends ABaseController {
         return getSuccessResponseVO(videoService.searchVideos(keyword, orderBy, pageNum, pageSize));
     }
 
+    /** 个性化推荐（未登录/无行为用户回退热门）*/
+    @GetMapping("/recommend")
+    public ResponseVO getRecommendList(
+            @RequestParam(defaultValue = "1")  Integer pageNum,
+            @RequestParam(defaultValue = "20") Integer pageSize,
+            HttpServletRequest request) {
+        String userId = getUserIdFromToken(request);
+        return getSuccessResponseVO(videoService.getRecommendList(userId, pageNum, pageSize));
+    }
+
     /** 首页视频列表（分页 + 分类筛选）*/
     @GetMapping("/list")
     public ResponseVO getVideoList(VideoQuery query) {

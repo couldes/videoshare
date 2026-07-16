@@ -45,4 +45,16 @@
         WHERE user_id = #{userId} AND action_type = 2
     </select>
 
+    <!-- 用户所有交互视频（点赞+收藏） -->
+    <select id="selectInteractedVideoIds" resultType="String">
+        SELECT target_id FROM user_action
+        WHERE user_id = #{userId} AND action_type IN (1, 2)
+    </select>
+
+    <!-- 所有用户的点赞/收藏行为 -->
+    <select id="selectAllInteractions" resultType="java.util.Map">
+        SELECT user_id, target_id FROM user_action
+        WHERE action_type IN (1, 2)
+    </select>
+
 </mapper>

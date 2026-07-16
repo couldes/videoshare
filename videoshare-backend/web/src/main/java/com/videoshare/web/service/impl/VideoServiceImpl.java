@@ -14,7 +14,9 @@ import com.videoshare.web.mapper.UserInfoMapper;
 import com.videoshare.web.mapper.VideoInfoMapper;
 import com.videoshare.web.service.VideoService;
 import com.videoshare.web.service.WatchHistoryService;
+import com.videoshare.web.component.RedisComponent;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +45,7 @@ public class VideoServiceImpl implements VideoService {
     @Resource private UserActionMapper userActionMapper;
     @Resource private com.videoshare.web.mapper.UserFollowMapper userFollowMapper;
     @Resource private WatchHistoryService watchHistoryService;
+    @Resource private RedisComponent redisComponent;
 
     // ============================================================
     //  视频列表（首页 + 个人主页通用）
@@ -255,6 +258,103 @@ public class VideoServiceImpl implements VideoService {
             query.setOrderBy("view_count");
         }
         return getVideoList(query);
+    }
+
+    // ============================================================
+    //  个性化推荐
+    // ============================================================
+    @Override
+    public PaginationResultVO<VideoInfoVO> getRecommendList(String userId,
+                                                             Integer pageNum,
+                                                             Integer pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+
+        // 未登录或没有交互 → 回退热门
+        if (userId == null) {
+            return getTrendingList(pageNum, pageSize);
+        }
+        List<String> interactedIds = userActionMapper.selectInteractedVideoIds(userId);
+        if (interactedIds.isEmpty()) {
+            return getTrendingList(pageNum, pageSize);
+        }
+
+        // 从 Redis 取相似视频，聚合排序
+        Map<String, Double> scoreMap = new HashMap<>();
+        for (String vid : interactedIds) {
+            Set<ZSetOperations.TypedTuple<String>> tuples = redisComponent.getVideoSimilarities(vid);
+            if (tuples == null) continue;
+            for (ZSetOperations.TypedTuple<String> t : tuples) {
+                String similarId = t.getValue();
+                Double score = t.getScore();
+                if (similarId != null && score != null) {
+                    scoreMap.merge(similarId, score, Double::sum);
+                }
+            }
+        }
+
+        if (scoreMap.isEmpty()) {
+            return getTrendingList(pageNum, pageSize);
+        }
+
+        // 排除已交互的视频
+        Set<String> excludeIds = new HashSet<>(interactedIds);
+        scoreMap.keySet().removeAll(excludeIds);
+
+        // 按分数降序排列
+        List<String> ranked = scoreMap.entrySet().stream()
+                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        int total = ranked.size();
+
+        // 分页截取
+        List<String> pageIds;
+        if (offset >= ranked.size()) {
+            pageIds = Collections.emptyList();
+        } else {
+            int to = Math.min(offset + pageSize, ranked.size());
+            pageIds = ranked.subList(offset, to);
+        }
+
+        // 不足时用热门补充
+        if (pageIds.size() < pageSize) {
+            PaginationResultVO<VideoInfoVO> trending = getTrendingList(1, pageSize * 2);
+            if (trending != null && trending.getList() != null) {
+                for (VideoInfoVO hot : trending.getList()) {
+                    if (pageIds.size() >= pageSize) break;
+                    if (!excludeIds.contains(hot.getVideoId())
+                            && !pageIds.contains(hot.getVideoId())) {
+                        pageIds.add(hot.getVideoId());
+                    }
+                }
+            }
+        }
+
+        // 批量查视频信息
+        List<VideoInfoVO> voList = batchGetVideoVOList(pageIds);
+        return new PaginationResultVO<>(total, pageSize, pageNum, voList);
+    }
+
+    /** 批量查视频并组装 VO（按传入 ID 顺序） */
+    private List<VideoInfoVO> batchGetVideoVOList(List<String> videoIds) {
+        if (videoIds.isEmpty()) return Collections.emptyList();
+
+        List<VideoInfo> videos = videoInfoMapper.selectByVideoIds(videoIds);
+        Map<String, VideoInfo> videoMap = videos.stream()
+                .collect(Collectors.toMap(VideoInfo::getVideoId, v -> v, (a, b) -> a));
+
+        Set<String> userIds = videos.stream().map(VideoInfo::getUserId).collect(Collectors.toSet());
+        Map<String, UserInfo> userMap = batchGetUsers(userIds);
+
+        return videoIds.stream()
+                .map(id -> {
+                    VideoInfo v = videoMap.get(id);
+                    if (v == null) return null;
+                    return convertToVO(v, userMap.get(v.getUserId()));
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     // ============================================================

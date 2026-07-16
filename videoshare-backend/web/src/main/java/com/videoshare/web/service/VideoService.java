@@ -23,4 +23,6 @@ public interface VideoService {
     PaginationResultVO<VideoInfoVO> getSubscriptionVideos(String userId, Integer pageNum, Integer pageSize);
 
     PaginationResultVO<VideoInfoVO> searchVideos(String keyword, String orderBy, Integer pageNum, Integer pageSize);
+
+    PaginationResultVO<VideoInfoVO> getRecommendList(String userId, Integer pageNum, Integer pageSize);
 }

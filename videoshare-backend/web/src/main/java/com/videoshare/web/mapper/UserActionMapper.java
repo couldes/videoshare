@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface UserActionMapper {
@@ -38,6 +39,16 @@ public interface UserActionMapper {
     List<String> selectFavoriteVideoIds(@Param("userId") String userId,
                                         @Param("offset") Integer offset,
                                         @Param("pageSize") Integer pageSize);
+
+    /**
+     * 查询用户所有交互视频ID（点赞和收藏，用于个性化推荐）
+     */
+    List<String> selectInteractedVideoIds(@Param("userId") String userId);
+
+    /**
+     * 查询所有用户的点赞/收藏行为（用于协同过滤计算）
+     */
+    List<Map<String, Object>> selectAllInteractions();
 
     /**
      * 统计用户收藏总数
