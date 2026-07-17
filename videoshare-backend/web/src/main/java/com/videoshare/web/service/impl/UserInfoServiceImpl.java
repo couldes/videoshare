@@ -6,6 +6,7 @@ import com.videoshare.common.entity.UserInfo;
 import com.videoshare.common.enums.UserSexEnum;
 import com.videoshare.common.enums.UserStatusEnum;
 import com.videoshare.common.exception.BusinessException;
+import com.videoshare.common.utils.SnowflakeIdGenerator;
 import com.videoshare.common.utils.StringTools;
 import com.videoshare.web.component.RedisComponent;
 import com.videoshare.web.mapper.UserInfoMapper;
@@ -24,6 +25,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Resource
     private RedisComponent redisComponent;
+
+    @Resource
+    private SnowflakeIdGenerator snowflakeIdGenerator;
 
 
     @Override
@@ -84,6 +88,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             ResponseVO.setNickName(userInfo.getNickName());
             ResponseVO.setEmail(userInfo.getEmail());
             ResponseVO.setTheme(userInfo.getTheme());
+            ResponseVO.setAvatarUrl(userInfo.getAvatarUrl());
             ResponseVO.setToken(token); // Token 告诉前端，后续请求带上它
 
             return ResponseVO;
@@ -118,7 +123,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
             //构建用户对象并写库（不变）
             userInfo = new UserInfo();
-            String userId = StringTools.getRandomNumber(Constants.LENGTH_10);
+            String userId = snowflakeIdGenerator.nextIdString();
             userInfo.setUserId(userId);
             userInfo.setNickName(nickName);
             userInfo.setEmail(email);
