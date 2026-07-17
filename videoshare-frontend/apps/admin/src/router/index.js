@@ -37,6 +37,12 @@ const routes = [
         name: 'CommentManage',
         component: () => import('@/views/comment/CommentManage.vue'),
         meta: { title: '评论管理', icon: 'ChatLineSquare' }
+      },
+      {
+        path: 'review',
+        name: 'VideoReview',
+        component: () => import('@/views/video/VideoReview.vue'),
+        meta: { title: '视频审核', icon: 'Finished' }
       }
     ]
   },
