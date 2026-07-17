@@ -1,5 +1,7 @@
 package com.videoshare.common.vo;
 
+import java.util.List;
+
 public class AnalyticsOverviewVO {
     private long totalViews;
     private long totalLikes;
@@ -8,6 +10,8 @@ public class AnalyticsOverviewVO {
     private long videoCount;
     private long recentViews;
     private long recentLikes;
+    private List<TrendPoint> viewsTrend;
+    private List<TrendPoint> likesTrend;
 
     public long getTotalViews()     { return totalViews; }
     public void setTotalViews(long v)     { this.totalViews = v; }
@@ -23,4 +27,8 @@ public class AnalyticsOverviewVO {
     public void setRecentViews(long v)    { this.recentViews = v; }
     public long getRecentLikes()    { return recentLikes; }
     public void setRecentLikes(long v)    { this.recentLikes = v; }
+    public List<TrendPoint> getViewsTrend()   { return viewsTrend; }
+    public void setViewsTrend(List<TrendPoint> v) { this.viewsTrend = v; }
+    public List<TrendPoint> getLikesTrend()   { return likesTrend; }
+    public void setLikesTrend(List<TrendPoint> v) { this.likesTrend = v; }
 }
