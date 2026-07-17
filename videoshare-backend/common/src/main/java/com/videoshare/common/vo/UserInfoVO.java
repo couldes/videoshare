@@ -13,6 +13,7 @@ public class UserInfoVO {
 
     private String  userId;           // 用户 ID
     private String  nickName;         // 昵称
+    private String  avatarUrl;        // 头像 URL
     private String  email;            // 邮箱
     private Integer sex;              // 性别（0男/1女/2保密）
     private String  sexDesc;          // 性别描述（"男"/"女"/"保密"）
@@ -26,6 +27,9 @@ public class UserInfoVO {
 
     public String getNickName() { return nickName; }
     public void setNickName(String nickName) { this.nickName = nickName; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

@@ -24,5 +24,11 @@ public class WebConfig implements WebMvcConfigurer {
                 : projectFolder + "/hls/";
         registry.addResourceHandler("/hls/**")
                 .addResourceLocations("file:" + hlsDir);
+
+        String imgDir = projectFolder.endsWith("/") || projectFolder.endsWith("\\")
+                ? projectFolder + "images/"
+                : projectFolder + "/images/";
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:" + imgDir);
     }
 }

@@ -12,6 +12,7 @@ public class ResponseVO<T> {
     private String nickName;
     private String email;
     private Integer theme;
+    private String avatarUrl;
     private String token;
 
 
@@ -59,6 +60,9 @@ public class ResponseVO<T> {
 
     public Integer getTheme() { return theme; }
     public void setTheme(Integer theme) { this.theme = theme; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
