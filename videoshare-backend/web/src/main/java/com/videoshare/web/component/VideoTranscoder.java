@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -19,10 +22,14 @@ public class VideoTranscoder {
     private static final Logger log = LoggerFactory.getLogger(VideoTranscoder.class);
     private static final long TIMEOUT_SECONDS = 600;
 
+    /** 启动时检测一次硬件编码器，后续复用 */
+    private static final List<String> ENCODER_ARGS = detectEncoder();
+
     private final ExecutorService streamDrainer = Executors.newCachedThreadPool();
 
     /**
      * 将原始视频转为 HLS，生成 index.m3u8 + .ts 分片
+     * 优先使用 GPU 硬件编码（h264_nvenc），不可用则回退到软件 ultrafast
      * @return 视频时长（秒）
      */
     public int transcodeToHLS(String inputPath, String outputDir) {
@@ -30,17 +37,7 @@ public class VideoTranscoder {
         String outputPath = outputDir + "/index.m3u8";
         String segmentPath = outputDir + "/segment_%03d.ts";
         try {
-            ProcessBuilder pb = new ProcessBuilder(
-                    "ffmpeg",
-                    "-i", inputPath,
-                    "-c:v", "libx264",
-                    "-c:a", "aac",
-                    "-hls_time", "10",
-                    "-hls_list_size", "0",
-                    "-hls_segment_filename", segmentPath,
-                    "-y",
-                    outputPath
-            );
+            ProcessBuilder pb = buildFfmpegCommand(inputPath, outputPath, segmentPath);
             Process process = startAndDrain(pb);
             boolean finished = process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             if (!finished) {
@@ -57,6 +54,59 @@ public class VideoTranscoder {
             throw new RuntimeException("ffmpeg HLS transcode error: " + e.getMessage(), e);
         }
         return detectDuration(inputPath);
+    }
+
+    /** 构建 ffmpeg 命令，自动选择可用硬件编码器 */
+    private ProcessBuilder buildFfmpegCommand(String inputPath, String outputPath, String segmentPath) {
+        List<String> cmd = new ArrayList<>();
+        cmd.add("ffmpeg");
+        cmd.add("-i");
+        cmd.add(inputPath);
+        cmd.addAll(ENCODER_ARGS);
+        cmd.add("-c:a");
+        cmd.add("aac");
+        cmd.add("-hls_time");
+        cmd.add("10");
+        cmd.add("-hls_list_size");
+        cmd.add("0");
+        cmd.add("-hls_segment_filename");
+        cmd.add(segmentPath);
+        cmd.add("-y");
+        cmd.add(outputPath);
+        return new ProcessBuilder(cmd);
+    }
+
+    /** 启动时探测可用硬件编码器，回退到 libx264 */
+    private static List<String> detectEncoder() {
+        if (isEncoderAvailable("h264_nvenc")) {
+            log.info("Using HW encoder: h264_nvenc");
+            return Arrays.asList("-c:v", "h264_nvenc", "-preset", "p1");
+        }
+        if (isEncoderAvailable("h264_qsv")) {
+            log.info("Using HW encoder: h264_qsv");
+            return Arrays.asList("-c:v", "h264_qsv");
+        }
+        if (isEncoderAvailable("h264_amf")) {
+            log.info("Using HW encoder: h264_amf");
+            return Arrays.asList("-c:v", "h264_amf");
+        }
+        log.warn("No HW encoder found, falling back to libx264 (slow)");
+        return Arrays.asList("-c:v", "libx264", "-preset", "ultrafast");
+    }
+
+    /** 检查 ffmpeg 是否支持指定编码器 */
+    private static boolean isEncoderAvailable(String encoderName) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    "ffmpeg", "-hide_banner", "-encoders"
+            );
+            Process process = pb.start();
+            String output = readAll(process.getInputStream());
+            process.waitFor(5, TimeUnit.SECONDS);
+            return output.contains(encoderName);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
@@ -137,7 +187,7 @@ public class VideoTranscoder {
         return process;
     }
 
-    private String readAll(InputStream stream) throws Exception {
+    private static String readAll(InputStream stream) throws Exception {
         StringBuilder sb = new StringBuilder();
         byte[] buf = new byte[8192];
         int n;
