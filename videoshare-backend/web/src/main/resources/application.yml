@@ -82,3 +82,8 @@ logging:
 # 自定义配置
 project:
   folder: "d:/webser/videoshare/"
+
+# 雪花ID生成器配置（单机部署保持默认即可）
+snowflake:
+  worker-id: 1
+  datacenter-id: 1

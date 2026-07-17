@@ -46,3 +46,8 @@ admin:
   account: admin
   password: admin123
   token-ttl: 1
+
+# 雪花ID — admin 模块用 worker-id=2，与 web 模块区分
+snowflake:
+  worker-id: 2
+  datacenter-id: 1
