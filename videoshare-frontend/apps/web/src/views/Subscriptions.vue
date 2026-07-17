@@ -9,9 +9,15 @@
       <VideoCard v-for="video in videos" :key="video.videoId" :video="video" />
     </div>
 
-    <div v-else class="empty-state">
+    <div v-else-if="!loading" class="empty-state">
       <p>还没有订阅任何频道</p>
       <RouterLink to="/" class="explore-link">去发现频道</RouterLink>
+    </div>
+
+    <div v-if="hasMore" class="load-more">
+      <button class="load-more-btn" :disabled="loading" @click="loadMore">
+        {{ loading ? '加载中...' : '加载更多' }}
+      </button>
     </div>
   </DefaultLayout>
 </template>
@@ -21,17 +27,35 @@ import { ref, onMounted } from 'vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import VideoCard from '@/components/VideoCard.vue'
 import { videoApi } from '@/api'
+import { PAGE_DEFAULTS } from '@videoshare/constants'
 
-const videos = ref([])
+const loading     = ref(false)
+const videos      = ref([])
+const totalCount  = ref(0)
+const currentPage = ref(1)
+const hasMore     = ref(false)
 
-onMounted(async () => {
+onMounted(() => fetchVideos(true))
+
+async function fetchVideos(reset = false) {
+  loading.value = true
   try {
-    const result = await videoApi.getSubscribedVideos?.()
-    videos.value = result?.list || []
-  } catch {
-    videos.value = []
-  }
-})
+    if (reset) currentPage.value = 1
+    const result = await videoApi.getSubscriptionVideos({
+      pageNum: currentPage.value,
+      pageSize: PAGE_DEFAULTS.PAGE_SIZE
+    })
+    if (reset) videos.value = result.list || []
+    else videos.value.push(...(result.list || []))
+    totalCount.value = result.total || 0
+    hasMore.value = videos.value.length < totalCount.value
+  } finally { loading.value = false }
+}
+
+async function loadMore() {
+  currentPage.value++
+  await fetchVideos(false)
+}
 </script>
 
 <style scoped>
@@ -53,4 +77,12 @@ onMounted(async () => {
 .explore-link {
   color: var(--color-accent); text-decoration: none; font-weight: 600; font-size: 14px;
 }
+.load-more { display: flex; justify-content: center; padding: 32px 0 16px; }
+.load-more-btn {
+  padding: 8px 24px; border-radius: 20px; border: none;
+  background: var(--bg-hover); color: var(--text-1); font-size: 13px;
+  cursor: pointer; transition: var(--transition); font-family: var(--font-body);
+}
+.load-more-btn:hover:not(:disabled) { background: #3a3a3a; }
+.load-more-btn:disabled { opacity: 0.6; cursor: default; }
 </style>

@@ -5,11 +5,19 @@
     <div class="page-body">
       <div class="main-col">
         <div class="player-wrap">
-          <video v-if="video" ref="playerRef" class="player"
-            :src="video.videoUrl" controls preload="metadata"
-            @play="onPlay" @ended="onEnded">
-            你的浏览器不支持 HTML5 视频播放。
-          </video>
+          <template v-if="video && video.status === 1">
+            <video ref="playerRef" class="player" controls preload="metadata"
+              @play="onPlay" @ended="onEnded">
+              你的浏览器不支持 HTML5 视频播放。
+            </video>
+          </template>
+          <div v-else-if="video && video.status === 0" class="player-placeholder">
+            <div class="placeholder-spinner" />
+            <p>视频转码中，请稍后再试</p>
+          </div>
+          <div v-else-if="video && video.status === 2" class="player-placeholder">
+            <p>视频已下架</p>
+          </div>
           <div v-else class="player-skeleton">加载中...</div>
         </div>
 
@@ -30,6 +38,10 @@
               <button class="action-btn" :class="{ active: userAction.favorited }" @click="handleFavorite">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <span>{{ userAction.favorited ? '已收藏' : '收藏' }}</span>
+              </button>
+              <button class="action-btn" :class="{ active: showSaveModal }" @click="handleSave">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z"/></svg>
+                <span>保存</span>
               </button>
               <button class="action-btn" @click="handleShare">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
@@ -137,15 +149,18 @@
         </div>
       </aside>
     </div>
+
+    <SaveToPlaylistModal v-if="video" :video-id="video.videoId" :visible="showSaveModal" @close="showSaveModal = false" />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import NavBar from '@/components/NavBar.vue'
 import VideoListItem from '@/components/VideoListItem.vue'
+import SaveToPlaylistModal from '@/components/SaveToPlaylistModal.vue'
 import { useUserStore } from '@/stores/user'
 import { videoApi, commentApi, profileApi } from '@/api'
 import { formatViews, formatRelative } from '@videoshare/utils/format'
@@ -158,10 +173,12 @@ const playerRef = ref(null)
 
 const video    = ref(null)
 const loading  = ref(false)
+let hlsInstance = null
 
 const userAction = reactive({ liked: false, favorited: false })
 const isFollowing = ref(false)
 const descExpanded = ref(false)
+const showSaveModal = ref(false)
 
 const comments       = ref([])
 const commentsLoading= ref(false)
@@ -191,6 +208,10 @@ async function loadVideo() {
   try {
     const data = await videoApi.getVideoDetail(route.params.videoId)
     video.value = data
+    if (data.status === 1) {
+      await nextTick()
+      await initHls()
+    }
     if (userStore.isLoggedIn) {
       const action = await videoApi.checkAction(route.params.videoId)
       userAction.liked = action.liked; userAction.favorited = action.favorited
@@ -200,6 +221,22 @@ async function loadVideo() {
   } catch { ElMessage.error('视频加载失败') }
   finally { loading.value = false }
 }
+
+async function initHls() {
+  if (!playerRef.value) return
+  const Hls = (await import('hls.js')).default
+  if (Hls.isSupported()) {
+    hlsInstance = new Hls()
+    hlsInstance.loadSource(`/hls/${route.params.videoId}/index.m3u8`)
+    hlsInstance.attachMedia(playerRef.value)
+  } else if (playerRef.value.canPlayType('application/vnd.apple.mpegurl')) {
+    playerRef.value.src = `/hls/${route.params.videoId}/index.m3u8`
+  }
+}
+
+onUnmounted(() => {
+  if (hlsInstance) hlsInstance.destroy()
+})
 
 async function loadComments(append = false) {
   commentsLoading.value = true
@@ -231,6 +268,11 @@ async function handleFavorite() {
 }
 
 function handleShare() { navigator.clipboard?.writeText(window.location.href); ElMessage.success('链接已复制到剪贴板') }
+
+function handleSave() {
+  if (!userStore.isLoggedIn) { router.push('/login'); return }
+  showSaveModal.value = true
+}
 
 async function handleFollow() {
   if (!userStore.isLoggedIn) { router.push('/login'); return }
@@ -269,6 +311,15 @@ async function deleteComment(comment) {
 .player-wrap { width: 100%; background: #000; border-radius: var(--radius-md); overflow: hidden; aspect-ratio: 16/9; }
 .player { width: 100%; height: 100%; display: block; }
 .player-skeleton { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px; }
+.player-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px; gap: 12px; }
+.placeholder-spinner {
+  width: 28px; height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .video-info-area { padding: 16px 0; }
 .video-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }

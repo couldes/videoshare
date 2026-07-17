@@ -1,11 +1,14 @@
 /**
  * Web 端 API 组装（完整版，含新功能接口）
  */
-import { createRequest }      from '@videoshare/api/request'
-import { createAccountApi }   from '@videoshare/api/account'
-import { createVideoApi }     from '@videoshare/api/video'
-import { createCommentApi }   from '@videoshare/api/comment'
-import { createProfileApi }   from '@videoshare/api/profile'
+import { createRequest }           from '@videoshare/api/request'
+import { createAccountApi }        from '@videoshare/api/account'
+import { createVideoApi }          from '@videoshare/api/video'
+import { createCommentApi }        from '@videoshare/api/comment'
+import { createProfileApi }        from '@videoshare/api/profile'
+import { createPlaylistApi }       from '@videoshare/api/playlist'
+import { createNotificationApi }   from '@videoshare/api/notification'
+import { createAnalyticsApi }     from '@videoshare/api/analytics'
 import { auth }               from '@/utils/auth'
 import router                 from '@/router'
 import { ElMessage }          from 'element-plus'
@@ -32,6 +35,9 @@ request.interceptors.response.use(
 
 // ★ 导出所有业务 API 实例
 export const accountApi = createAccountApi(request)
-export const videoApi   = createVideoApi(request)
-export const commentApi = createCommentApi(request)
-export const profileApi = createProfileApi(request)
+export const videoApi          = createVideoApi(request)
+export const commentApi        = createCommentApi(request)
+export const profileApi        = createProfileApi(request)
+export const playlistApi       = createPlaylistApi(request)
+export const notificationApi   = createNotificationApi(request)
+export const analyticsApi     = createAnalyticsApi(request)

@@ -23,6 +23,20 @@ const routes = [
   { path: '/upload',   name: 'Upload',   component: () => import('@/views/Upload.vue'),        meta: { title: '发布视频', requiresAuth: true } },
   { path: '/favorites',name: 'Favorites',component: () => import('@/views/Favorites.vue'),     meta: { title: '我的收藏', requiresAuth: true } },
 
+  // 播放列表详情页
+  { path: '/playlist/:playlistId', name: 'PlaylistDetail', component: () => import('@/views/PlaylistDetail.vue'), meta: { title: '播放列表' } },
+
+  // 关注列表
+  { path: '/user/:userId/following', name: 'Following', component: () => import('@/views/FollowingList.vue'), meta: { title: '关注列表' } },
+
+  // 通知列表页（需登录）
+  { path: '/notifications', name: 'Notifications', component: () => import('@/views/Notifications.vue'), meta: { title: '通知', requiresAuth: true } },
+
+  // 创作者中心
+  { path: '/analytics', name: 'Analytics', component: () => import('@/views/CreatorAnalytics.vue'), meta: { title: '创作者中心', requiresAuth: true } },
+  { path: '/my-videos', name: 'MyVideos', component: () => import('@/views/VideoManage.vue'), meta: { title: '我的视频', requiresAuth: true } },
+  { path: '/edit/:videoId', name: 'VideoEdit', component: () => import('@/views/VideoEdit.vue'), meta: { title: '编辑视频', requiresAuth: true } },
+
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 

@@ -32,14 +32,22 @@
             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
           </RouterLink>
 
+          <NotificationBell />
+
           <el-dropdown trigger="click" @command="handleCommand">
             <div class="avatar-wrap">
-              <div class="avatar">{{ userStore.nickName.charAt(0).toUpperCase() }}</div>
+              <div class="avatar">
+                <img v-if="userStore.userInfo?.avatarUrl" :src="userStore.userInfo.avatarUrl" class="avatar-img" alt="" />
+                <span v-else>{{ userStore.nickName.charAt(0).toUpperCase() }}</span>
+              </div>
             </div>
             <template #dropdown>
               <el-dropdown-menu class="user-dropdown">
                 <div class="dropdown-header">
-                  <div class="dropdown-avatar">{{ userStore.nickName.charAt(0).toUpperCase() }}</div>
+                  <div class="dropdown-avatar">
+                    <img v-if="userStore.userInfo?.avatarUrl" :src="userStore.userInfo.avatarUrl" class="avatar-img" alt="" />
+                    <span v-else>{{ userStore.nickName.charAt(0).toUpperCase() }}</span>
+                  </div>
                   <div>
                     <div class="dropdown-name">{{ userStore.nickName }}</div>
                     <div class="dropdown-email">{{ userStore.userInfo?.email }}</div>
@@ -56,6 +64,14 @@
                 <el-dropdown-item command="favorites">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                   我的收藏
+                </el-dropdown-item>
+                <el-dropdown-item command="analytics" divided>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                  创作者中心
+                </el-dropdown-item>
+                <el-dropdown-item command="myVideos">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2zM8 17H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V7h2v2zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg>
+                  我的视频
                 </el-dropdown-item>
                 <el-dropdown-item command="theme" divided>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg>
@@ -79,6 +95,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import NotificationBell from '@/components/NotificationBell.vue'
 import { getTheme, toggleTheme as toggleAppTheme } from '@videoshare/utils/theme'
 
 defineEmits(['toggle-sidebar'])
@@ -110,6 +127,10 @@ async function handleCommand(cmd) {
     router.push('/favorites')
   } else if (cmd === 'upload') {
     router.push('/upload')
+  } else if (cmd === 'analytics') {
+    router.push('/analytics')
+  } else if (cmd === 'myVideos') {
+    router.push('/my-videos')
   } else if (cmd === 'theme') {
     toggleTheme()
   }
@@ -186,7 +207,9 @@ async function handleCommand(cmd) {
   background: linear-gradient(135deg, var(--color-accent), #7c3aed);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 13px; color: #fff;
+  overflow: hidden;
 }
+.avatar-img { width: 100%; height: 100%; object-fit: cover; }
 
 .user-dropdown {
   background: var(--bg-surface) !important;
@@ -210,6 +233,7 @@ async function handleCommand(cmd) {
   background: linear-gradient(135deg, var(--color-accent), #7c3aed);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0;
+  overflow: hidden;
 }
 .dropdown-name  { font-weight: 600; color: var(--text-1); font-size: 13px; }
 .dropdown-email { font-size: 11px; color: var(--text-muted); margin-top: 2px; }

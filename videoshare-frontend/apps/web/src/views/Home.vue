@@ -1,6 +1,6 @@
 <template>
   <DefaultLayout>
-    <div class="category-bar">
+    <div v-if="showCategories" class="category-bar">
       <div class="category-scroll">
         <button v-for="cat in categoryTabs" :key="cat" class="category-tab"
           :class="{ active: activeCategory === cat }" @click="switchCategory(cat)">
@@ -26,11 +26,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import VideoCard from '@/components/VideoCard.vue'
 import { videoApi } from '@/api'
 import { PAGE_DEFAULTS } from '@videoshare/constants'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+const isLoggedIn = computed(() => userStore.isLoggedIn)
+const showCategories = ref(true)
 
 const activeCategory   = ref('全部')
 const loading          = ref(false)
@@ -40,13 +45,14 @@ const currentPage      = ref(1)
 const hasMore          = ref(false)
 
 const categoryTabs = ['全部','音乐','游戏','科技','体育','美食','教育','影视','生活']
+const categoryMap = { '音乐':'music','游戏':'game','科技':'tech','体育':'sport','美食':'food','教育':'edu','影视':'film','生活':'life' }
 
 onMounted(() => fetchVideos(true))
 
 function buildQuery(reset) {
   if (reset) currentPage.value = 1
   const params = { pageNum: currentPage.value, pageSize: PAGE_DEFAULTS.PAGE_SIZE }
-  if (activeCategory.value !== '全部') params.category = activeCategory.value
+  if (activeCategory.value !== '全部') params.category = categoryMap[activeCategory.value]
   return params
 }
 
@@ -54,7 +60,13 @@ async function fetchVideos(reset = false) {
   loading.value = true
   try {
     const params = buildQuery(reset)
-    const result = await videoApi.getVideoList(params)
+    // 选择了具体分类 → 统一走 /video/list（已支持分类过滤）
+    // 全部 → 已登录用推荐，未登录用热门
+    const isCategoryFilter = activeCategory.value !== '全部'
+    const api = isCategoryFilter
+      ? videoApi.getVideoList
+      : (isLoggedIn.value ? videoApi.getRecommendedVideos : videoApi.getTrendingList)
+    const result = await api(params)
     if (reset) videos.value = result.list || []
     else videos.value.push(...(result.list || []))
     totalCount.value = result.total || 0

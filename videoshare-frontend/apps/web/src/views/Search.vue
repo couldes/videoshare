@@ -30,9 +30,9 @@
       <div v-if="searchedKeyword" class="results-header">
         <span class="results-label">搜索结果</span>
         <el-select v-model="orderBy" class="order-select" @change="searchVideos(true)" size="small">
-          <el-option label="最新发布" value="create_time" />
+          <el-option label="相关度" value="relevance" />
           <el-option label="最多播放" value="view_count" />
-          <el-option label="最多点赞" value="like_count" />
+          <el-option label="最新发布" value="createTime" />
         </el-select>
       </div>
       <div v-if="videos.length > 0" class="video-list">
@@ -93,7 +93,7 @@ const videos          = ref([])
 const videoTotal      = ref(0)
 const currentPage     = ref(1)
 const hasMore         = ref(false)
-const orderBy         = ref('create_time')
+const orderBy         = ref('relevance')
 const userResults     = ref([])
 
 if (route.query.keyword) {
@@ -117,7 +117,7 @@ async function searchVideos(reset = false) {
   if (reset) currentPage.value = 1
   videoLoading.value = true
   try {
-    const result = await videoApi.getVideoList({
+    const result = await videoApi.searchVideos({
       pageNum: currentPage.value, pageSize: PAGE_DEFAULTS.PAGE_SIZE,
       keyword: searchedKeyword.value, orderBy: orderBy.value
     })

@@ -71,3 +71,8 @@ body {
 
   --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
 }
+
+/* 覆盖 Element Plus stripe 行背景为 td 级别，由主题变量控制 */
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background: var(--bg-hover);
+}

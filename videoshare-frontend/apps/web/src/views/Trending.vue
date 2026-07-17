@@ -40,10 +40,9 @@ async function fetchVideos(reset = false) {
   loading.value = true
   try {
     if (reset) currentPage.value = 1
-    const result = await videoApi.getVideoList({
+    const result = await videoApi.getTrendingList({
       pageNum: currentPage.value,
-      pageSize: PAGE_DEFAULTS.PAGE_SIZE,
-      orderBy: 'view_count'
+      pageSize: PAGE_DEFAULTS.PAGE_SIZE
     })
     if (reset) videos.value = result.list || []
     else videos.value.push(...(result.list || []))

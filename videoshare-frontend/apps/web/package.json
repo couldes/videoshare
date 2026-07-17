@@ -3,19 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation vite",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation vite build"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
     "@videoshare/api": "1.0.0",
-    "@videoshare/utils": "1.0.0",
-    "@videoshare/constants": "1.0.0",
     "@videoshare/assets": "1.0.0",
-    "vue": "^3.4.0",
-    "vue-router": "^4.3.0",
-    "pinia": "^2.1.7",
+    "@videoshare/constants": "1.0.0",
+    "@videoshare/utils": "1.0.0",
+    "chart.js": "^4.5.1",
     "element-plus": "^2.6.0",
-    "@element-plus/icons-vue": "^2.3.1"
-  },
-  "devDependencies": {}
+    "hls.js": "^1.6.16",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0"
+  }
 }

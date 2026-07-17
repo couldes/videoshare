@@ -38,7 +38,18 @@
                 </div>
               </template>
 
-              <template v-if="videoUrl && !uploading">
+              <template v-if="transcoding">
+                <div class="transcode-progress">
+                  <p class="transcode-text">转码中，请稍候...</p>
+                  <div class="transcode-spinner" />
+                  <p class="transcode-hint">视频正在服务端处理，完成后自动发布</p>
+                </div>
+              </template>
+              <template v-else-if="transcodeError">
+                <p class="error-text">转码失败</p>
+                <button class="re-upload-btn" @click="handleRetry">重试</button>
+              </template>
+              <template v-else-if="videoUrl && !uploading">
                 <p class="success-text">视频上传成功</p>
                 <video class="preview-video" :src="videoUrl" controls preload="metadata" />
                 <button class="re-upload-btn" @click="resetVideo">重新选择</button>
@@ -106,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import NavBar from '@/components/NavBar.vue'
@@ -123,6 +134,12 @@ const uploadedSize   = ref('0 B')
 const totalSize      = ref('0 B')
 const dragging       = ref(false)
 const publishing     = ref(false)
+const videoId        = ref('')
+const transcoding    = ref(false)
+const transcodeError = ref(false)
+const MAX_POLLS = 200
+const pollCount  = ref(0)
+let pollTimer    = null
 const coverInput     = ref(null)
 const tagInput       = ref('')
 const tagInputRef    = ref(null)
@@ -152,6 +169,7 @@ async function uploadVideoFile(file) {
       uploadProgress.value = percent
       uploadedSize.value = formatFileSize(file.size * percent / 100)
     })
+    videoId.value = result.videoId
     videoUrl.value = result.videoUrl
     ElMessage.success('视频上传成功')
   } catch { ElMessage.error('视频上传失败，请重试') }
@@ -186,10 +204,46 @@ async function handlePublish() {
   if (!valid) return
   publishing.value = true
   try {
-    await videoApi.publishVideo({ title: form.title, description: form.description, coverUrl: coverUrl.value, videoUrl: videoUrl.value, category: form.category, tags: tagList.value.join(',') })
-    ElMessage.success('视频发布成功！'); router.push('/')
-  } finally { publishing.value = false }
+    await videoApi.publishVideo({ videoId: videoId.value, title: form.title, description: form.description, coverUrl: coverUrl.value, videoUrl: videoUrl.value, category: form.category, tags: tagList.value.join(',') })
+    transcoding.value = true
+    pollTranscode()
+  } catch { ElMessage.error('发布失败，请重试') }
+  finally { publishing.value = false }
 }
+
+function pollTranscode() {
+  pollCount.value = 0
+  pollTimer = setInterval(async () => {
+    pollCount.value++
+    try {
+      const detail = await videoApi.getVideoDetail(videoId.value)
+      if (detail.videoUrl?.includes('/hls/')) {
+        clearInterval(pollTimer)
+        pollTimer = null
+        transcoding.value = false
+        ElMessage.success('转码完成，视频已发布')
+        router.push('/')
+      } else if (pollCount.value >= MAX_POLLS) {
+        clearInterval(pollTimer)
+        pollTimer = null
+        transcoding.value = false
+        transcodeError.value = true
+      }
+    } catch {
+      // 处理中继续轮询，不报错
+    }
+  }, 3000)
+}
+
+function handleRetry() {
+  transcodeError.value = false
+  transcoding.value = true
+  pollTranscode()
+}
+
+onUnmounted(() => {
+  if (pollTimer) clearInterval(pollTimer)
+})
 
 function saveDraft() { ElMessage.info('草稿功能开发中') }
 </script>
@@ -228,6 +282,19 @@ function saveDraft() { ElMessage.info('草稿功能开发中') }
 .progress-size { font-size: 12px; color: var(--text-muted); }
 
 .success-text { font-size: 14px; font-weight: 600; color: #22c55e; }
+.error-text { font-size: 14px; font-weight: 600; color: #ef4444; }
+
+.transcode-progress { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+.transcode-text { font-size: 14px; font-weight: 600; color: var(--text-1); }
+.transcode-hint { font-size: 12px; color: var(--text-muted); }
+.transcode-spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 .preview-video { width: 100%; max-height: 160px; border-radius: var(--radius-sm); object-fit: contain; background: #000; }
 .re-upload-btn { background: none; border: 1px solid var(--border); color: var(--text-2); padding: 5px 14px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; transition: var(--transition); font-family: var(--font-body); }
 .re-upload-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
@@ -239,8 +306,8 @@ function saveDraft() { ElMessage.info('草稿功能开发中') }
 .cover-preview { width: 100%; height: 100%; object-fit: cover; }
 .cover-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
-.tag-input-area { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 10px; min-height: 40px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); align-items: center; cursor: text; transition: var(--transition); }
-.tag-input-area:focus-within { border-color: #555; }
+.tag-input-area { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 10px; min-height: 64px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); align-items: center; cursor: text; transition: var(--transition); }
+.tag-input-area:focus-within { border-color: var(--color-accent); }
 .tag-item { border-radius: 3px !important; }
 .tag-input { flex: 1; min-width: 120px; background: none; border: none; outline: none; color: var(--text-1); font-size: 13px; font-family: var(--font-body); }
 .tag-input::placeholder { color: var(--text-muted); }
