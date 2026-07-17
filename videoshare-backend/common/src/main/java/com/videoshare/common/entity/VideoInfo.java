@@ -21,8 +21,10 @@ public class VideoInfo {
     private Integer commentCount;   // 评论数
     private Integer favoriteCount;  // 收藏数
     private Double  heat;           // 热度分
-    /** 0=审核中 1=已发布 2=已下架 */
+    /** 0=待审核 1=已发布 2=已下架 @see VideoStatusEnum */
     private Integer status;
+    /** 驳回原因 */
+    private String remark;
     private Date    createTime;
     private Date    updateTime;
 
@@ -56,6 +58,8 @@ public class VideoInfo {
     public void    setHeat(Double v)         { this.heat = v; }
     public Integer getStatus()        { return status; }
     public void    setStatus(Integer v)       { this.status = v; }
+    public String  getRemark()        { return remark; }
+    public void    setRemark(String v)        { this.remark = v; }
     public Date    getCreateTime()    { return createTime; }
     public void    setCreateTime(Date v)      { this.createTime = v; }
     public Date    getUpdateTime()    { return updateTime; }
