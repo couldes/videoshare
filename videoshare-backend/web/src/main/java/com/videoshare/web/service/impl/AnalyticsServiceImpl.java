@@ -21,16 +21,32 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Resource private UserFollowMapper    userFollowMapper;
 
     @Override
-    public AnalyticsOverviewVO getOverview(String userId) {
+    public AnalyticsOverviewVO getOverview(String userId, int days) {
         AnalyticsOverviewVO vo = new AnalyticsOverviewVO();
         vo.setTotalViews(videoInfoMapper.sumViewsByUserId(userId));
         vo.setTotalLikes(videoInfoMapper.sumLikesByUserId(userId));
         vo.setTotalComments(videoInfoMapper.sumCommentsByUserId(userId));
         vo.setFollowerCount(userFollowMapper.countFollowers(userId));
         vo.setVideoCount(videoInfoMapper.countByUserIdAll(userId));
-        vo.setRecentViews(watchHistoryMapper.countRecentViewsForCreator(userId, 30));
-        vo.setRecentLikes(userActionMapper.countRecentLikesForCreator(userId, 30));
+        vo.setRecentViews(watchHistoryMapper.countRecentViewsForCreator(userId, days));
+        vo.setRecentLikes(userActionMapper.countRecentLikesForCreator(userId, days));
+
+        // 每日趋势数据
+        List<java.util.Map<String, Object>> dailyViews = watchHistoryMapper.selectDailyViewsForCreator(userId, days);
+        List<java.util.Map<String, Object>> dailyLikes = userActionMapper.selectDailyLikesForCreator(userId, days);
+
+        vo.setViewsTrend(mapToTrendPoints(dailyViews));
+        vo.setLikesTrend(mapToTrendPoints(dailyLikes));
         return vo;
+    }
+
+    private List<com.videoshare.common.vo.TrendPoint> mapToTrendPoints(List<java.util.Map<String, Object>> rows) {
+        if (rows == null) return java.util.Collections.emptyList();
+        return rows.stream().map(row -> {
+            String date = row.get("date") != null ? row.get("date").toString() : "";
+            long count = row.get("count") != null ? ((Number) row.get("count")).longValue() : 0L;
+            return new com.videoshare.common.vo.TrendPoint(date, count);
+        }).collect(java.util.stream.Collectors.toList());
     }
 
     @Override

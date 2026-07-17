@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface AnalyticsService {
-    AnalyticsOverviewVO getOverview(String userId);
+    AnalyticsOverviewVO getOverview(String userId, int days);
     PaginationResultVO<VideoStatVO> getVideoStats(String userId, int pageNum, int pageSize);
     List<Map<String, Object>> getAudience(String userId);
 }

@@ -12,17 +12,23 @@ public interface VideoService {
     PaginationResultVO<VideoInfoVO> getVideoList(VideoQuery query);
     VideoInfoVO getVideoDetail(String videoId, String currentUserId);
     Map<String, Object> uploadVideoFile(MultipartFile file, String userId);
-    void publishVideo(String userId, String title, String description,
+    void publishVideo(String userId, String videoId, String title, String description,
                       String coverUrl, String videoUrl, String category, String tags);
+    void updateVideo(String userId, String videoId, String title, String description,
+                     String category, String tags);
     PaginationResultVO<VideoInfoVO> getUserVideos(String userId, Integer pageNum, Integer pageSize);
     boolean toggleAction(String userId, String videoId, Integer actionType);
     Map<String, Boolean> checkUserAction(String userId, String videoId);
 
-    PaginationResultVO<VideoInfoVO> getTrendingList(Integer pageNum, Integer pageSize);
+    PaginationResultVO<VideoInfoVO> getTrendingList(Integer pageNum, Integer pageSize, String category);
 
     PaginationResultVO<VideoInfoVO> getSubscriptionVideos(String userId, Integer pageNum, Integer pageSize);
 
     PaginationResultVO<VideoInfoVO> searchVideos(String keyword, String orderBy, Integer pageNum, Integer pageSize);
 
     PaginationResultVO<VideoInfoVO> getRecommendList(String userId, Integer pageNum, Integer pageSize);
+
+    void republishVideo(String userId, String videoId);
+
+    void unpublishVideo(String userId, String videoId);
 }

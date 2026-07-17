@@ -46,8 +46,10 @@ public interface VideoInfoMapper {
     /** 统计某用户所有视频的被点赞总数 */
     Long sumLikeCountByUserId(@Param("userId") String userId);
 
-    /** 热门列表 — 按热度降序 */
-    List<VideoInfo> selectTrendingList(@Param("offset") int offset, @Param("limit") int limit);
+    /** 热门列表 — 按热度降序，支持分类筛选 */
+    List<VideoInfo> selectTrendingList(@Param("offset") int offset,
+                                       @Param("limit") int limit,
+                                       @Param("category") String category);
 
     /** 订阅列表 — 关注者视频按时间倒序 */
     List<VideoInfo> selectSubscriptionVideos(@Param("userId") String userId,
@@ -69,6 +71,13 @@ public interface VideoInfoMapper {
                                   @Param("duration") Integer duration,
                                   @Param("coverUrl") String coverUrl,
                                   @Param("status") Integer status);
+
+    /** 更新视频基本信息（编辑用） */
+    Integer updateVideoInfo(@Param("videoId") String videoId,
+                            @Param("title") String title,
+                            @Param("description") String description,
+                            @Param("category") String category,
+                            @Param("tags") String tags);
 
     // ---- 创作者分析查询 ----
 

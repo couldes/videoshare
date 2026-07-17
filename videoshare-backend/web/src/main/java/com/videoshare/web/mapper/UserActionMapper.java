@@ -60,4 +60,10 @@ public interface UserActionMapper {
      */
     Long countRecentLikesForCreator(@Param("userId") String userId,
                                     @Param("sinceDays") int sinceDays);
+
+    /**
+     * 创作者每日点赞趋势（近 N 天）
+     */
+    List<Map<String, Object>> selectDailyLikesForCreator(@Param("userId") String userId,
+                                                          @Param("days") int days);
 }

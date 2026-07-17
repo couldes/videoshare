@@ -37,4 +37,10 @@ public interface WatchHistoryMapper {
      */
     Long countRecentViewsForCreator(@Param("userId") String userId,
                                     @Param("sinceDays") int sinceDays);
+
+    /**
+     * 创作者每日观看趋势（近 N 天）
+     */
+    List<java.util.Map<String, Object>> selectDailyViewsForCreator(@Param("userId") String userId,
+                                                                    @Param("days") int days);
 }

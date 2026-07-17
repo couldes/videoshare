@@ -65,7 +65,7 @@ public class TranscodeServiceImpl implements TranscodeService {
             }
 
             String videoUrl = "/hls/" + videoId + "/index.m3u8";
-            videoInfoMapper.updateTranscodeResult(videoId, videoUrl, duration, coverPath, 2);
+            videoInfoMapper.updateTranscodeResult(videoId, videoUrl, duration, coverPath, null);
 
             transcodeJobMapper.updateStatus(job.getJobId(), 2, "");
             log.info("Transcode complete for videoId: {}", videoId);

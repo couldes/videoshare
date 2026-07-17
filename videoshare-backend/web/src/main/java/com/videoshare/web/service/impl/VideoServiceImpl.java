@@ -3,9 +3,10 @@ package com.videoshare.web.service.impl;
 
 import com.videoshare.common.entity.UserInfo;
 import com.videoshare.common.entity.VideoInfo;
+import com.videoshare.common.enums.VideoStatusEnum;
 import com.videoshare.common.exception.BusinessException;
 import com.videoshare.common.query.VideoQuery;
-import com.videoshare.common.utils.StringTools;
+import com.videoshare.common.utils.SnowflakeIdGenerator;
 import com.videoshare.common.vo.PaginationResultVO;
 import com.videoshare.common.vo.UserInfoVO;
 import com.videoshare.common.vo.VideoInfoVO;
@@ -59,6 +60,7 @@ public class VideoServiceImpl implements VideoService {
     @Resource private UserInfoMapper      userInfoMapper;
     @Resource private UserActionMapper    userActionMapper;
     @Resource private com.videoshare.web.mapper.UserFollowMapper userFollowMapper;
+    @Resource private SnowflakeIdGenerator snowflakeIdGenerator;
     @Resource private WatchHistoryService watchHistoryService;
     @Resource private RedisComponent      redisComponent;
     @Resource private NotificationService notificationService;
@@ -70,7 +72,7 @@ public class VideoServiceImpl implements VideoService {
     @Override
     public PaginationResultVO<VideoInfoVO> getVideoList(VideoQuery query) {
         // 默认只查已发布
-        if (query.getStatus() == null) query.setStatus(2);
+        if (query.getStatus() == null) query.setStatus(VideoStatusEnum.PUBLISHED.getValue());
 
         List<VideoInfo> list  = videoInfoMapper.selectVideoList(query);
         Integer         total = videoInfoMapper.countVideos(query);
@@ -93,9 +95,19 @@ public class VideoServiceImpl implements VideoService {
     @Transactional(rollbackFor = Exception.class)
     public VideoInfoVO getVideoDetail(String videoId, String currentUserId) {
         VideoInfo video = videoInfoMapper.selectByVideoId(videoId);
-        if (video == null || video.getStatus() < 2) {
-            throw new BusinessException("视频不存在或已下架");
+        if (video == null) {
+            throw new BusinessException("视频不存在");
         }
+        VideoStatusEnum st = VideoStatusEnum.fromValue(video.getStatus());
+        if (st == VideoStatusEnum.PENDING) {
+            // 转码中/待审核，返回视频信息让前端显示提示
+            UserInfo author = userInfoMapper.selectByUserId(video.getUserId());
+            return convertToVO(video, author);
+        }
+        if (st == VideoStatusEnum.OFFLINE) {
+            throw new BusinessException("视频已下架");
+        }
+        // st == PUBLISHED: 正常播放
         // 播放量 +1（简化版，高并发场景应改为 Redis 计数 + 定时落库）
         videoInfoMapper.increaseViewCount(videoId);
         video.setViewCount(video.getViewCount() + 1);
@@ -120,8 +132,8 @@ public class VideoServiceImpl implements VideoService {
                 ? originalName.substring(originalName.lastIndexOf("."))
                 : ".mp4";
 
-        // 生成唯一文件名，防止覆盖
-        String fileName = userId + "_" + System.currentTimeMillis() + ext;
+        String videoId = snowflakeIdGenerator.nextIdString();
+        String fileName = videoId + ext;
         File dest = new File(getUploadDir() + fileName);
         dest.getParentFile().mkdirs();
 
@@ -131,8 +143,8 @@ public class VideoServiceImpl implements VideoService {
             throw new BusinessException("视频上传失败，请重试");
         }
 
-        // 返回前端期望的 { videoUrl, duration } 格式
         Map<String, Object> result = new HashMap<>();
+        result.put("videoId", videoId);
         result.put("videoUrl", "/video/resource/" + fileName);
         result.put("duration", 0);
         return result;
@@ -143,10 +155,22 @@ public class VideoServiceImpl implements VideoService {
     // ============================================================
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void publishVideo(String userId, String title, String description,
+    public void publishVideo(String userId, String videoId, String title, String description,
                              String coverUrl, String videoUrl, String category, String tags) {
+        // 防御：检查视频是否已存在（前端重复提交 / 异常重试）
+        VideoInfo existing = videoInfoMapper.selectByVideoId(videoId);
+        if (existing != null) {
+            // 已下架且属于当前用户 → 复用重新发布
+            if (VideoStatusEnum.fromValue(existing.getStatus()) == VideoStatusEnum.OFFLINE
+                    && existing.getUserId().equals(userId)) {
+                videoInfoMapper.updateStatus(videoId, VideoStatusEnum.PUBLISHED.getValue());
+                return;
+            }
+            throw new BusinessException("视频已发布，请勿重复操作");
+        }
+
         VideoInfo video = new VideoInfo();
-        video.setVideoId(StringTools.getRandomNumber(10));
+        video.setVideoId(videoId);
         video.setUserId(userId);
         video.setTitle(title);
         video.setDescription(description);
@@ -154,7 +178,7 @@ public class VideoServiceImpl implements VideoService {
         video.setVideoUrl(videoUrl);
         video.setCategory(category);
         video.setTags(tags);
-        video.setStatus(0); // 处理中，转码完成后 → 2
+        video.setStatus(0); // 待审核，转码完成后保持此状态
         video.setViewCount(0L);
         video.setLikeCount(0);
         video.setCommentCount(0);
@@ -163,10 +187,26 @@ public class VideoServiceImpl implements VideoService {
 
         // 触发异步转码
         String inputPath = getUploadDir() + extractFileName(videoUrl);
-        String outputDir = getHlsDir() + video.getVideoId() + "/";
-        transcodeService.createJob(video.getVideoId(), inputPath, outputDir);
+        String outputDir = getHlsDir() + videoId + "/";
+        transcodeService.createJob(videoId, inputPath, outputDir);
         boolean needCover = coverUrl == null || coverUrl.isEmpty();
-        transcodeService.transcodeAsync(video.getVideoId(), inputPath, outputDir, needCover);
+        transcodeService.transcodeAsync(videoId, inputPath, outputDir, needCover);
+    }
+
+    // ============================================================
+    //  编辑视频信息
+    // ============================================================
+    @Override
+    public void updateVideo(String userId, String videoId, String title,
+                            String description, String category, String tags) {
+        VideoInfo video = videoInfoMapper.selectByVideoId(videoId);
+        if (video == null) {
+            throw new BusinessException("视频不存在");
+        }
+        if (!video.getUserId().equals(userId)) {
+            throw new BusinessException("只能编辑自己的视频");
+        }
+        videoInfoMapper.updateVideoInfo(videoId, title, description, category, tags);
     }
 
     // ============================================================
@@ -180,7 +220,7 @@ public class VideoServiceImpl implements VideoService {
         query.setUserId(userId);
         query.setPageNum(pageNum);
         query.setPageSize(pageSize);
-        query.setStatus(2);
+        query.setStatus(VideoStatusEnum.PUBLISHED.getValue());
         return getVideoList(query);
     }
 
@@ -237,12 +277,13 @@ public class VideoServiceImpl implements VideoService {
     //  热门视频列表
     // ============================================================
     @Override
-    public PaginationResultVO<VideoInfoVO> getTrendingList(Integer pageNum, Integer pageSize) {
+    public PaginationResultVO<VideoInfoVO> getTrendingList(Integer pageNum, Integer pageSize, String category) {
         int offset = (pageNum - 1) * pageSize;
 
-        List<VideoInfo> list  = videoInfoMapper.selectTrendingList(offset, pageSize);
+        List<VideoInfo> list  = videoInfoMapper.selectTrendingList(offset, pageSize, category);
         VideoQuery     countQuery = new VideoQuery();
-        countQuery.setStatus(2);
+        countQuery.setStatus(VideoStatusEnum.PUBLISHED.getValue());
+        countQuery.setCategory(category);
         Integer        total = videoInfoMapper.countVideos(countQuery);
 
         Set<String> userIds = list.stream().map(VideoInfo::getUserId).collect(Collectors.toSet());
@@ -304,11 +345,11 @@ public class VideoServiceImpl implements VideoService {
 
         // 未登录或没有交互 → 回退热门
         if (userId == null) {
-            return getTrendingList(pageNum, pageSize);
+            return getTrendingList(pageNum, pageSize, null);
         }
         List<String> interactedIds = userActionMapper.selectInteractedVideoIds(userId);
         if (interactedIds.isEmpty()) {
-            return getTrendingList(pageNum, pageSize);
+            return getTrendingList(pageNum, pageSize, null);
         }
 
         // 从 Redis 取相似视频，聚合排序
@@ -326,7 +367,7 @@ public class VideoServiceImpl implements VideoService {
         }
 
         if (scoreMap.isEmpty()) {
-            return getTrendingList(pageNum, pageSize);
+            return getTrendingList(pageNum, pageSize, null);
         }
 
         // 排除已交互的视频
@@ -352,7 +393,7 @@ public class VideoServiceImpl implements VideoService {
 
         // 不足时用热门补充
         if (pageIds.size() < pageSize) {
-            PaginationResultVO<VideoInfoVO> trending = getTrendingList(1, pageSize * 2);
+            PaginationResultVO<VideoInfoVO> trending = getTrendingList(1, pageSize * 2, null);
             if (trending != null && trending.getList() != null) {
                 for (VideoInfoVO hot : trending.getList()) {
                     if (pageIds.size() >= pageSize) break;
@@ -367,6 +408,37 @@ public class VideoServiceImpl implements VideoService {
         // 批量查视频信息
         List<VideoInfoVO> voList = batchGetVideoVOList(pageIds);
         return new PaginationResultVO<>(total, pageSize, pageNum, voList);
+    }
+
+    // ============================================================
+    //  重新发布/下架（用户端）
+    // ============================================================
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void republishVideo(String userId, String videoId) {
+        VideoInfo video = videoInfoMapper.selectByVideoId(videoId);
+        if (video == null) throw new BusinessException("视频不存在");
+        if (!video.getUserId().equals(userId)) {
+            throw new BusinessException("只能操作自己的视频");
+        }
+        if (VideoStatusEnum.fromValue(video.getStatus()) != VideoStatusEnum.OFFLINE) {
+            throw new BusinessException("只有已下架视频可以重新发布");
+        }
+        videoInfoMapper.updateStatus(videoId, VideoStatusEnum.PUBLISHED.getValue());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void unpublishVideo(String userId, String videoId) {
+        VideoInfo video = videoInfoMapper.selectByVideoId(videoId);
+        if (video == null) throw new BusinessException("视频不存在");
+        if (!video.getUserId().equals(userId)) {
+            throw new BusinessException("只能操作自己的视频");
+        }
+        if (VideoStatusEnum.fromValue(video.getStatus()) != VideoStatusEnum.PUBLISHED) {
+            throw new BusinessException("只能下架已发布的视频");
+        }
+        videoInfoMapper.updateStatus(videoId, VideoStatusEnum.OFFLINE.getValue());
     }
 
     /** 批量查视频并组装 VO（按传入 ID 顺序） */
@@ -434,6 +506,7 @@ public class VideoServiceImpl implements VideoService {
             UserInfoVO userVO = new UserInfoVO();
             userVO.setUserId(author.getUserId());
             userVO.setNickName(author.getNickName());
+            userVO.setAvatarUrl(author.getAvatarUrl());
             vo.setUserInfo(userVO);
         }
         return vo;

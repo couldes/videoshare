@@ -36,8 +36,9 @@ public class VideoController extends ABaseController {
     @GetMapping("/trending")
     public ResponseVO getTrendingList(
             @RequestParam(defaultValue = "1")  Integer pageNum,
-            @RequestParam(defaultValue = "20") Integer pageSize) {
-        return getSuccessResponseVO(videoService.getTrendingList(pageNum, pageSize));
+            @RequestParam(defaultValue = "20") Integer pageSize,
+            @RequestParam(required = false) String category) {
+        return getSuccessResponseVO(videoService.getTrendingList(pageNum, pageSize, category));
     }
 
     /** 订阅 Feed — 关注者的视频时间线 */
@@ -101,6 +102,7 @@ public class VideoController extends ABaseController {
     /** 发布视频（填写标题、描述、封面、分类后调用）*/
     @PostMapping("/publish")
     public ResponseVO publishVideo(
+            @RequestParam String  videoId,
             @RequestParam String  title,
             @RequestParam(required = false) String description,
             @RequestParam String  coverUrl,
@@ -109,7 +111,41 @@ public class VideoController extends ABaseController {
             @RequestParam(required = false) String tags,
             HttpServletRequest request) {
         String userId = requireLogin(request);
-        videoService.publishVideo(userId, title, description, coverUrl, videoUrl, category, tags);
+        videoService.publishVideo(userId, videoId, title, description, coverUrl, videoUrl, category, tags);
+        return getSuccessResponseVO(null);
+    }
+
+    /** 用户重新发布已下架视频（复用已有视频信息）*/
+    @PostMapping("/republish")
+    public ResponseVO republishVideo(
+            @RequestParam String videoId,
+            HttpServletRequest request) {
+        String userId = requireLogin(request);
+        videoService.republishVideo(userId, videoId);
+        return getSuccessResponseVO(null);
+    }
+
+    /** 用户下架自己的已发布视频 */
+    @PostMapping("/unpublish")
+    public ResponseVO unpublishVideo(
+            @RequestParam String videoId,
+            HttpServletRequest request) {
+        String userId = requireLogin(request);
+        videoService.unpublishVideo(userId, videoId);
+        return getSuccessResponseVO(null);
+    }
+
+    /** 编辑视频信息（标题、简介、分类、标签）*/
+    @PostMapping("/update")
+    public ResponseVO updateVideo(
+            @RequestParam String videoId,
+            @RequestParam String title,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String tags,
+            HttpServletRequest request) {
+        String userId = requireLogin(request);
+        videoService.updateVideo(userId, videoId, title, description, category, tags);
         return getSuccessResponseVO(null);
     }
 

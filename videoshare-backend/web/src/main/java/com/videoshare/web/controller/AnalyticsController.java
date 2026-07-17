@@ -15,9 +15,11 @@ public class AnalyticsController extends ABaseController {
     private AnalyticsService analyticsService;
 
     @GetMapping("/overview")
-    public ResponseVO getOverview(HttpServletRequest request) {
+    public ResponseVO getOverview(
+            @RequestParam(defaultValue = "30") Integer days,
+            HttpServletRequest request) {
         String userId = requireLogin(request);
-        return getSuccessResponseVO(analyticsService.getOverview(userId));
+        return getSuccessResponseVO(analyticsService.getOverview(userId, days));
     }
 
     @GetMapping("/videos")

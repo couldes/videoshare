@@ -76,4 +76,15 @@
           AND wh.create_time >= DATE_SUB(NOW(), INTERVAL #{sinceDays} DAY)
     </select>
 
+    <!-- 创作者每日观看趋势 -->
+    <select id="selectDailyViewsForCreator" resultType="java.util.Map">
+        SELECT DATE(wh.create_time) AS date, COUNT(1) AS count
+        FROM watch_history wh
+        JOIN video_info v ON wh.video_id = v.video_id
+        WHERE v.user_id = #{userId}
+          AND wh.create_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        GROUP BY DATE(wh.create_time)
+        ORDER BY date
+    </select>
+
 </mapper>

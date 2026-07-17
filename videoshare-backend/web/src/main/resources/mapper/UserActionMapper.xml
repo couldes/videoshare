@@ -67,4 +67,16 @@
           AND ua.create_time >= DATE_SUB(NOW(), INTERVAL #{sinceDays} DAY)
     </select>
 
+    <!-- 创作者每日点赞趋势 -->
+    <select id="selectDailyLikesForCreator" resultType="java.util.Map">
+        SELECT DATE(ua.create_time) AS date, COUNT(1) AS count
+        FROM user_action ua
+        JOIN video_info v ON ua.target_id = v.video_id
+        WHERE v.user_id = #{userId}
+          AND ua.action_type = 1
+          AND ua.create_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        GROUP BY DATE(ua.create_time)
+        ORDER BY date
+    </select>
+
 </mapper>
