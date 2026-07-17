@@ -30,6 +30,9 @@ public interface AdminVideoMapper {
     /** 修改状态（1=发布/上架 2=下架）*/
     Integer updateStatus(@Param("videoId") String videoId, @Param("status") Integer status);
 
+    /** 保存驳回原因 */
+    Integer updateRemark(@Param("videoId") String videoId, @Param("remark") String remark);
+
     /** 删除视频（物理删除，谨慎使用）*/
     Integer deleteByVideoId(@Param("videoId") String videoId);
 

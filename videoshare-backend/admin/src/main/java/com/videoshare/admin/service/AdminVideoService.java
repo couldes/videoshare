@@ -14,7 +14,7 @@ import java.util.Map;
 public interface AdminVideoService {
     PaginationResultVO<VideoInfo> getVideoList(VideoQuery query);
     VideoInfo getVideoDetail(String videoId);
-    void updateVideoStatus(String videoId, Integer status);
+    void updateVideoStatus(String videoId, Integer status, String remark);
     void deleteVideo(String videoId);
     Map<String, Object> getVideoStats();
 }

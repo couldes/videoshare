@@ -19,6 +19,7 @@
         <result column="comment_count"  property="commentCount"/>
         <result column="favorite_count" property="favoriteCount"/>
         <result column="status"         property="status"/>
+        <result column="remark"         property="remark"/>
         <result column="create_time"    property="createTime"/>
     </resultMap>
 
@@ -59,6 +60,10 @@
     <delete id="deleteByVideoId">
         DELETE FROM video_info WHERE video_id = #{videoId}
     </delete>
+
+    <update id="updateRemark">
+        UPDATE video_info SET remark = #{remark} WHERE video_id = #{videoId}
+    </update>
 
     <!-- 各状态视频数（保证每个状态都有记录）-->
     <select id="countByStatus" resultType="java.util.HashMap">

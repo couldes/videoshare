@@ -5,6 +5,7 @@ import com.videoshare.admin.mapper.AdminVideoMapper;
 import com.videoshare.admin.service.AdminVideoService;
 import com.videoshare.common.vo.PaginationResultVO;
 import com.videoshare.common.entity.VideoInfo;
+import com.videoshare.common.enums.VideoStatusEnum;
 import com.videoshare.common.exception.BusinessException;
 import com.videoshare.common.query.VideoQuery;
 import org.springframework.stereotype.Service;
@@ -33,12 +34,26 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     }
 
     @Override
-    public void updateVideoStatus(String videoId, Integer status) {
-        if (status == null || (status != 1 && status != 2)) {
-            throw new BusinessException("非法状态值：1=上架 2=下架");
+    public void updateVideoStatus(String videoId, Integer status, String remark) {
+        VideoStatusEnum target = VideoStatusEnum.fromValue(status);
+        if (target == null || target == VideoStatusEnum.PENDING) {
+            throw new BusinessException("非法状态值");
         }
-        Integer rows = adminVideoMapper.updateStatus(videoId, status);
+
+        VideoInfo video = adminVideoMapper.selectByVideoId(videoId);
+        if (video == null) throw new BusinessException("视频不存在");
+
+        VideoStatusEnum current = VideoStatusEnum.fromValue(video.getStatus());
+        if (current == null || !current.canTransitionTo(target)) {
+            throw new BusinessException("当前状态不允许此操作");
+        }
+
+        Integer rows = adminVideoMapper.updateStatus(videoId, target.getValue());
         if (rows == 0) throw new BusinessException("视频不存在");
+        // 下架/驳回时保存原因
+        if (target == VideoStatusEnum.OFFLINE && remark != null && !remark.isEmpty()) {
+            adminVideoMapper.updateRemark(videoId, remark);
+        }
     }
 
     @Override

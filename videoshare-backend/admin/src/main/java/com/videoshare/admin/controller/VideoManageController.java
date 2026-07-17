@@ -47,9 +47,10 @@ public class VideoManageController extends ABaseController {
     @PostMapping("/updateStatus")
     public ResponseVO<Void> updateStatus(
             @RequestParam String  videoId,
-            @RequestParam Integer status) {
+            @RequestParam Integer status,
+            @RequestParam(required = false) String remark) {
         try {
-            adminVideoService.updateVideoStatus(videoId, status);
+            adminVideoService.updateVideoStatus(videoId, status, remark);
             return success();
         } catch (BusinessException e) {
             return error(e.getMessage());
