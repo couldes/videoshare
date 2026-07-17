@@ -16,6 +16,8 @@ public class UserInfo {
     private Integer sex;            // 性别（0男/1女/2保密）
     private Integer theme;          // 主题（界面风格）
     private String bio;
+    private String avatarUrl;
+    private String background;
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
@@ -43,4 +45,8 @@ public class UserInfo {
 
     public String getBio()        { return bio; }
     public void   setBio(String v){ this.bio = v; }
+    public String getAvatarUrl()  { return avatarUrl; }
+    public void   setAvatarUrl(String v) { this.avatarUrl = v; }
+    public String getBackground() { return background; }
+    public void   setBackground(String v){ this.background = v; }
 }

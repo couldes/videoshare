@@ -9,7 +9,8 @@ public class UserProfileVO {
     private String  userId;
     private String  nickName;
     private String  bio;           // 个人简介
-    private String  avatarUrl;     // 头像URL（暂用首字母代替）
+    private String  avatarUrl;     // 头像URL
+    private String  backgroundUrl; // 频道背景图URL
     private Integer sex;
     private Integer currentCoinCount;
     private Long    videoCount;    // 发布视频数
@@ -27,6 +28,8 @@ public class UserProfileVO {
     public void    setBio(String v)            { this.bio = v; }
     public String  getAvatarUrl()      { return avatarUrl; }
     public void    setAvatarUrl(String v)      { this.avatarUrl = v; }
+    public String  getBackgroundUrl()    { return backgroundUrl; }
+    public void    setBackgroundUrl(String v)  { this.backgroundUrl = v; }
     public Integer getSex()            { return sex; }
     public void    setSex(Integer v)           { this.sex = v; }
     public Integer getCurrentCoinCount(){ return currentCoinCount; }

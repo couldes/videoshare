@@ -15,6 +15,8 @@ import com.videoshare.web.mapper.UserInfoMapper;
 import com.videoshare.web.mapper.VideoInfoMapper;
 import com.videoshare.web.service.NotificationService;
 import com.videoshare.web.service.UserProfileService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserProfileServiceImpl implements UserProfileService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserProfileServiceImpl.class);
 
     @Resource private UserInfoMapper      userInfoMapper;
     @Resource private UserFollowMapper    userFollowMapper;
@@ -44,6 +48,8 @@ public class UserProfileServiceImpl implements UserProfileService {
         vo.setNickName(user.getNickName());
         vo.setBio(user.getBio());
         vo.setSex(user.getSex());
+        vo.setAvatarUrl(user.getAvatarUrl());
+        vo.setBackgroundUrl(user.getBackground());
 
         // 统计数据
         vo.setVideoCount(videoInfoMapper.countByUserId(userId));
@@ -65,9 +71,9 @@ public class UserProfileServiceImpl implements UserProfileService {
     //  更新个人资料
     // ============================================================
     @Override
-    public void updateProfile(String userId, String bio, String avatarUrl) {
-        // UserInfoMapper 需要补充 updateProfile 方法（见下方）
-        userInfoMapper.updateProfile(userId, bio, avatarUrl);
+    public void updateProfile(String userId, String bio, String avatarUrl, String backgroundUrl) {
+        log.info("updateProfile userId={}, avatarUrl={}, backgroundUrl={}", userId, avatarUrl, backgroundUrl);
+        userInfoMapper.updateProfile(userId, bio, avatarUrl, backgroundUrl);
     }
 
     // ============================================================
@@ -129,6 +135,19 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .collect(Collectors.toList());
 
         return new PaginationResultVO<>(total, pageSize, pageNum, voList);
+    }
+
+    // ============================================================
+    //  关注列表 / 粉丝列表
+    // ============================================================
+    @Override
+    public List<UserInfo> getFollowingList(String userId) {
+        return userFollowMapper.selectFollowingList(userId);
+    }
+
+    @Override
+    public List<UserInfo> getFollowerList(String userId) {
+        return userFollowMapper.selectFollowerList(userId);
     }
 
     // ============================================================

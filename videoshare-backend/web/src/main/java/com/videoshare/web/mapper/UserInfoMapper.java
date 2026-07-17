@@ -30,7 +30,8 @@ public interface UserInfoMapper {
     // 更新个人简介和头像
     Integer updateProfile(@Param("userId")    String userId,
                           @Param("bio")       String bio,
-                          @Param("avatarUrl") String avatarUrl);
+                          @Param("avatarUrl") String avatarUrl,
+                          @Param("backgroundUrl") String backgroundUrl);
 
     // 搜索用户（按昵称/邮箱模糊匹配）
     List<UserInfo> searchByKeyword(@Param("keyword") String keyword);

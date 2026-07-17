@@ -45,6 +45,7 @@
         <set>
             <if test="bio != null">bio = #{bio},</if>
             <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+            <if test="backgroundUrl != null">background = #{backgroundUrl},</if>
         </set>
         WHERE user_id = #{userId}
     </update>
