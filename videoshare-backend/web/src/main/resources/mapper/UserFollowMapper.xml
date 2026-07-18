@@ -30,7 +30,7 @@
     </select>
 
     <select id="selectFollowingList" resultType="com.videoshare.common.entity.UserInfo">
-        SELECT u.user_id, u.nick_name, u.avatar_url, u.email, u.sex, u.bio, u.background_url, u.status, u.theme, u.join_time
+        SELECT u.user_id, u.nick_name, u.avatar_url, u.email, u.bio, u.background, u.status, u.join_time
         FROM user_follow uf
         JOIN user_info u ON uf.follow_user_id = u.user_id
         WHERE uf.user_id = #{userId}
@@ -38,7 +38,7 @@
     </select>
 
     <select id="selectFollowerList" resultType="com.videoshare.common.entity.UserInfo">
-        SELECT u.user_id, u.nick_name, u.avatar_url, u.email, u.sex, u.bio, u.background_url, u.status, u.theme, u.join_time
+        SELECT u.user_id, u.nick_name, u.avatar_url, u.email, u.bio, u.background, u.status, u.join_time
         FROM user_follow uf
         JOIN user_info u ON uf.user_id = u.user_id
         WHERE uf.follow_user_id = #{followUserId}

@@ -129,6 +129,7 @@ public class UserProfileController extends ABaseController {
             m.put("nickName", u.getNickName());
             m.put("email",    u.getEmail());
             m.put("joinTime", u.getJoinTime());
+            m.put("avatarUrl", u.getAvatarUrl());
             return m;
         }).collect(Collectors.toList());
         return getSuccessResponseVO(result);

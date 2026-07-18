@@ -5,7 +5,7 @@
 <mapper namespace="com.videoshare.web.mapper.UserInfoMapper">
 
     <select id="selectByEmail" resultType="com.videoshare.common.entity.UserInfo">
-        SELECT user_id, password, nick_name, email, bio, status, background
+        SELECT user_id, password, nick_name, email, bio, status, background, avatar_url
         FROM user_info WHERE email = #{email}
     </select>
 
@@ -30,7 +30,7 @@
 
     <!-- 搜索用户（按昵称/邮箱模糊匹配）-->
     <select id="searchByKeyword" resultType="com.videoshare.common.entity.UserInfo">
-        SELECT user_id, nick_name, email, join_time, status
+        SELECT user_id, nick_name, email, join_time, status, avatar_url
         FROM user_info
         WHERE status = 1
           AND (nick_name LIKE CONCAT('%', #{keyword}, '%')

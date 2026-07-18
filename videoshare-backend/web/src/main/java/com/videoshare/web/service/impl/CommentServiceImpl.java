@@ -244,9 +244,12 @@ public class CommentServiceImpl implements CommentService {
         vo.setStatus(c.getStatus());
         vo.setCreateTime(c.getCreateTime());
 
-        // 填充评论者昵称
+        // 填充评论者昵称和头像
         UserInfo author = userMap.get(c.getUserId());
-        if (author != null) vo.setNickName(author.getNickName());
+        if (author != null) {
+            vo.setNickName(author.getNickName());
+            vo.setAvatarUrl(author.getAvatarUrl());
+        }
 
         // 填充被回复者昵称
         if (c.getReplyUserId() != null) {
