@@ -1,5 +1,6 @@
-package com.videoshare.web.search;
+package com.videoshare.common.search;
 
+import com.videoshare.common.entity.VideoInfo;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -85,4 +86,24 @@ public class VideoSearchDocument {
     public void    setStatus(Integer v)     { this.status = v; }
     public Date    getCreateTime()   { return createTime; }
     public void    setCreateTime(Date v)    { this.createTime = v; }
+
+    public static VideoSearchDocument fromVideoInfo(VideoInfo video, String nickName) {
+        VideoSearchDocument doc = new VideoSearchDocument();
+        doc.setVideoId(video.getVideoId());
+        doc.setTitle(video.getTitle());
+        doc.setDescription(video.getDescription());
+        doc.setTags(video.getTags());
+        doc.setCategory(video.getCategory());
+        doc.setUserId(video.getUserId());
+        doc.setNickName(nickName != null ? nickName : "");
+        doc.setCoverUrl(video.getCoverUrl());
+        doc.setDuration(video.getDuration());
+        doc.setViewCount(video.getViewCount());
+        doc.setLikeCount(video.getLikeCount());
+        doc.setCommentCount(video.getCommentCount());
+        doc.setFavoriteCount(video.getFavoriteCount());
+        doc.setStatus(video.getStatus());
+        doc.setCreateTime(video.getCreateTime());
+        return doc;
+    }
 }

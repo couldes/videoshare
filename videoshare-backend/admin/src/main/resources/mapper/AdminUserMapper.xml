@@ -67,6 +67,13 @@
         <include refid="whereClause" />
     </select>
 
+    <!-- 按用户ID查询 -->
+    <select id="selectByUserId" resultMap="UserInfoMap">
+        SELECT user_id, nick_name, email, join_time, status, sex
+        FROM user_info
+        WHERE user_id = #{userId}
+    </select>
+
     <!-- 修改用户状态 -->
     <update id="updateStatus">
         UPDATE user_info

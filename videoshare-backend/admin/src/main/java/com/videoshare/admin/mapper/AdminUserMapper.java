@@ -49,6 +49,11 @@ public interface AdminUserMapper {
     Integer deleteByUserId(@Param("userId") String userId);
 
     /**
+     * 按用户ID查询用户信息
+     */
+    UserInfo selectByUserId(@Param("userId") String userId);
+
+    /**
      * Dashboard 统计：各状态用户数量
      * 返回 [{ status: 0, count: 5 }, { status: 1, count: 95 }]
      */

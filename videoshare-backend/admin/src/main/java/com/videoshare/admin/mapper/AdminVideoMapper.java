@@ -33,6 +33,9 @@ public interface AdminVideoMapper {
     /** 保存驳回原因 */
     Integer updateRemark(@Param("videoId") String videoId, @Param("remark") String remark);
 
+    /** 查询所有已发布视频（用于 ES 全量重建） */
+    List<VideoInfo> selectAllPublished();
+
     /** 删除视频（物理删除，谨慎使用）*/
     Integer deleteByVideoId(@Param("videoId") String videoId);
 

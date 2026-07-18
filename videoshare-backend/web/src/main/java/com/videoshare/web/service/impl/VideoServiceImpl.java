@@ -18,6 +18,9 @@ import com.videoshare.web.service.TranscodeService;
 import com.videoshare.web.service.VideoService;
 import com.videoshare.web.service.WatchHistoryService;
 import com.videoshare.web.component.RedisComponent;
+import com.videoshare.common.search.VideoSearchService;
+import com.videoshare.common.search.SearchResult;
+import com.videoshare.common.search.VideoSearchDocument;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -30,10 +33,15 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class VideoServiceImpl implements VideoService {
 
     /** 视频文件存储根路径（从 application.yml project.folder 读取） */
+    private static final Logger log = LoggerFactory.getLogger(VideoServiceImpl.class);
+
     @Value("${project.folder:d:/webser/videoshare/}")
     private String projectFolder;
 
@@ -65,6 +73,7 @@ public class VideoServiceImpl implements VideoService {
     @Resource private RedisComponent      redisComponent;
     @Resource private NotificationService notificationService;
     @Resource private TranscodeService transcodeService;
+    @Resource private VideoSearchService videoSearchService;
 
     // ============================================================
     //  视频列表（首页 + 个人主页通用）
@@ -191,6 +200,8 @@ public class VideoServiceImpl implements VideoService {
         transcodeService.createJob(videoId, inputPath, outputDir);
         boolean needCover = coverUrl == null || coverUrl.isEmpty();
         transcodeService.transcodeAsync(videoId, inputPath, outputDir, needCover);
+
+        syncToES(videoId);
     }
 
     // ============================================================
@@ -207,6 +218,7 @@ public class VideoServiceImpl implements VideoService {
             throw new BusinessException("只能编辑自己的视频");
         }
         videoInfoMapper.updateVideoInfo(videoId, title, description, category, tags);
+        syncToES(videoId);
     }
 
     // ============================================================
@@ -319,19 +331,19 @@ public class VideoServiceImpl implements VideoService {
     }
 
     // ============================================================
-    //  全文搜索（当前使用 MySQL LIKE，ES 集成待 ES 环境就绪后启用）
+    //  全文搜索（ES 全文检索，按 _score/view_count 排序）
     // ============================================================
     @Override
     public PaginationResultVO<VideoInfoVO> searchVideos(String keyword, String orderBy,
                                                          Integer pageNum, Integer pageSize) {
-        VideoQuery query = new VideoQuery();
-        query.setKeyword(keyword);
-        query.setPageNum(pageNum);
-        query.setPageSize(pageSize);
-        if ("view_count".equals(orderBy)) {
-            query.setOrderBy("view_count");
+        try {
+            SearchResult result = videoSearchService.searchIds(keyword, orderBy, pageNum, pageSize);
+            List<VideoInfoVO> voList = batchGetVideoVOList(result.getVideoIds());
+            return new PaginationResultVO<>((int) result.getTotal(), pageSize, pageNum, voList);
+        } catch (Exception e) {
+            log.error("ES 搜索异常，降级返回空，keyword={}", keyword, e);
+            return new PaginationResultVO<>(0, pageSize, pageNum, Collections.emptyList());
         }
-        return getVideoList(query);
     }
 
     // ============================================================
@@ -425,6 +437,7 @@ public class VideoServiceImpl implements VideoService {
             throw new BusinessException("只有已下架视频可以重新发布");
         }
         videoInfoMapper.updateStatus(videoId, VideoStatusEnum.PUBLISHED.getValue());
+        videoSearchService.updateStatus(videoId, VideoStatusEnum.PUBLISHED.getValue());
     }
 
     @Override
@@ -439,6 +452,7 @@ public class VideoServiceImpl implements VideoService {
             throw new BusinessException("只能下架已发布的视频");
         }
         videoInfoMapper.updateStatus(videoId, VideoStatusEnum.OFFLINE.getValue());
+        videoSearchService.updateStatus(videoId, VideoStatusEnum.OFFLINE.getValue());
     }
 
     /** 批量查视频并组装 VO（按传入 ID 顺序） */
@@ -521,6 +535,19 @@ public class VideoServiceImpl implements VideoService {
                     + v.getCommentCount() * 10.0
                     + v.getFavoriteCount() * 8.0;
             videoInfoMapper.updateHeat(videoId, heat);
+        }
+    }
+
+    /** 同步视频数据到 ES（失败不影响 MySQL 主流程） */
+    private void syncToES(String videoId) {
+        try {
+            VideoInfo video = videoInfoMapper.selectByVideoId(videoId);
+            if (video == null) return;
+            UserInfo user = userInfoMapper.selectByUserId(video.getUserId());
+            String nickName = user != null ? user.getNickName() : "";
+            videoSearchService.save(VideoSearchDocument.fromVideoInfo(video, nickName));
+        } catch (Exception e) {
+            log.error("同步视频到 ES 失败，videoId={}", videoId, e);
         }
     }
 

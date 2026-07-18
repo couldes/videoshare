@@ -17,4 +17,5 @@ public interface AdminVideoService {
     void updateVideoStatus(String videoId, Integer status, String remark);
     void deleteVideo(String videoId);
     Map<String, Object> getVideoStats();
+    int reindexAll();
 }

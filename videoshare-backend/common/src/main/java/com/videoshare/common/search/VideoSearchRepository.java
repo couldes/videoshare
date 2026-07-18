@@ -1,4 +1,4 @@
-package com.videoshare.web.search;
+package com.videoshare.common.search;
 
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;

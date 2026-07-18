@@ -2,22 +2,37 @@
 package com.videoshare.admin.service.impl;
 
 import com.videoshare.admin.mapper.AdminVideoMapper;
+import com.videoshare.admin.mapper.AdminUserMapper;
 import com.videoshare.admin.service.AdminVideoService;
 import com.videoshare.common.vo.PaginationResultVO;
+import com.videoshare.common.entity.UserInfo;
 import com.videoshare.common.entity.VideoInfo;
 import com.videoshare.common.enums.VideoStatusEnum;
 import com.videoshare.common.exception.BusinessException;
 import com.videoshare.common.query.VideoQuery;
+import com.videoshare.common.search.VideoSearchService;
+import com.videoshare.common.search.VideoSearchDocument;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class AdminVideoServiceImpl implements AdminVideoService {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminVideoServiceImpl.class);
+
     @Resource
     private AdminVideoMapper adminVideoMapper;
+
+    @Resource
+    private AdminUserMapper adminUserMapper;
+
+    @Resource
+    private VideoSearchService videoSearchService;
 
     @Override
     public PaginationResultVO<VideoInfo> getVideoList(VideoQuery query) {
@@ -54,12 +69,19 @@ public class AdminVideoServiceImpl implements AdminVideoService {
         if (target == VideoStatusEnum.OFFLINE && remark != null && !remark.isEmpty()) {
             adminVideoMapper.updateRemark(videoId, remark);
         }
+        // 同步 ES：发布时保存完整文档，下架时更新状态
+        if (target == VideoStatusEnum.PUBLISHED) {
+            syncToES(videoId);
+        } else {
+            videoSearchService.updateStatus(videoId, target.getValue());
+        }
     }
 
     @Override
     public void deleteVideo(String videoId) {
         Integer rows = adminVideoMapper.deleteByVideoId(videoId);
         if (rows == 0) throw new BusinessException("视频不存在或已删除");
+        videoSearchService.deleteById(videoId);
     }
 
     @Override
@@ -90,5 +112,32 @@ public class AdminVideoServiceImpl implements AdminVideoService {
         }
         stats.put("dailyPublish", daily);
         return stats;
+    }
+
+    @Override
+    public int reindexAll() {
+        List<VideoInfo> allVideos = adminVideoMapper.selectAllPublished();
+        List<VideoSearchDocument> docs = new ArrayList<>();
+        for (VideoInfo video : allVideos) {
+            UserInfo user = adminUserMapper.selectByUserId(video.getUserId());
+            String nickName = user != null ? user.getNickName() : "";
+            docs.add(VideoSearchDocument.fromVideoInfo(video, nickName));
+        }
+        videoSearchService.saveAll(docs);
+        log.info("ES 全量重建索引完成，共 {} 条", docs.size());
+        return docs.size();
+    }
+
+    /** 同步单个视频到 ES */
+    private void syncToES(String videoId) {
+        try {
+            VideoInfo video = adminVideoMapper.selectByVideoId(videoId);
+            if (video == null) return;
+            UserInfo user = adminUserMapper.selectByUserId(video.getUserId());
+            String nickName = user != null ? user.getNickName() : "";
+            videoSearchService.save(VideoSearchDocument.fromVideoInfo(video, nickName));
+        } catch (Exception e) {
+            log.error("同步视频到 ES 失败，videoId={}", videoId, e);
+        }
     }
 }

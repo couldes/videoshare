@@ -79,4 +79,15 @@ public class VideoManageController extends ABaseController {
             return error("获取统计失败");
         }
     }
+
+    /** 全量重建 ES 索引 */
+    @PostMapping("/reindex")
+    public ResponseVO<String> reindex() {
+        try {
+            int count = adminVideoService.reindexAll();
+            return success("重建索引完成，共 " + count + " 条");
+        } catch (Exception e) {
+            return error("重建索引失败：" + e.getMessage());
+        }
+    }
 }

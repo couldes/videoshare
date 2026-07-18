@@ -48,6 +48,11 @@
         SELECT * FROM video_info WHERE video_id = #{videoId}
     </select>
 
+    <!-- 查询所有已发布视频（ES 全量重建用）-->
+    <select id="selectAllPublished" resultMap="VideoMap">
+        SELECT v.* FROM video_info v WHERE v.status = 1
+    </select>
+
     <select id="countVideos" resultType="Integer">
         SELECT COUNT(1) FROM video_info v
         <include refid="adminWhere"/>
