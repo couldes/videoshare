@@ -54,7 +54,8 @@
 
           <div class="author-row">
             <RouterLink :to="`/user/${video.userInfo?.userId}`" class="author-link">
-              <div class="author-avatar">{{ video.userInfo?.nickName?.charAt(0).toUpperCase() }}</div>
+              <img v-if="video.userInfo?.avatarUrl" :src="video.userInfo.avatarUrl" class="author-avatar-img" alt="" />
+              <div v-else class="author-avatar">{{ video.userInfo?.nickName?.charAt(0).toUpperCase() }}</div>
               <div class="author-info">
                 <div class="author-name">{{ video.userInfo?.nickName }}</div>
                 <div class="author-fans">{{ formatViews(video.userInfo?.followerCount ?? 0) }} 位关注者</div>
@@ -82,7 +83,8 @@
           </div>
 
           <div v-if="userStore.isLoggedIn" class="comment-input-row">
-            <div class="ci-avatar">{{ userStore.nickName.charAt(0).toUpperCase() }}</div>
+            <img v-if="userStore.userInfo?.avatarUrl" :src="userStore.userInfo.avatarUrl" class="ci-avatar-img" alt="" />
+            <div v-else class="ci-avatar">{{ userStore.nickName.charAt(0).toUpperCase() }}</div>
             <div class="ci-box">
               <el-input v-model="commentText" type="textarea" :rows="2"
                 placeholder="发表你的评论..." :maxlength="500" show-word-limit resize="none" />
@@ -100,7 +102,8 @@
             <div v-for="comment in comments" :key="comment.commentId" class="comment-item">
               <div class="comment-main">
                 <RouterLink :to="`/user/${comment.userId}`">
-                  <div class="c-avatar">{{ comment.nickName?.charAt(0).toUpperCase() }}</div>
+                  <img v-if="comment.avatarUrl" :src="comment.avatarUrl" class="c-avatar-img" alt="" />
+                  <div v-else class="c-avatar">{{ comment.nickName?.charAt(0).toUpperCase() }}</div>
                 </RouterLink>
                 <div class="c-body">
                   <div class="c-name">{{ comment.nickName }}</div>
@@ -121,7 +124,8 @@
                   </div>
                   <div v-if="comment.replies?.length" class="replies">
                     <div v-for="reply in comment.replies.slice(0, 3)" :key="reply.commentId" class="reply-item">
-                      <div class="c-avatar c-avatar--sm">{{ reply.nickName?.charAt(0).toUpperCase() }}</div>
+                      <img v-if="reply.avatarUrl" :src="reply.avatarUrl" class="c-avatar-img c-avatar-img--sm" alt="" />
+                      <div v-else class="c-avatar c-avatar--sm">{{ reply.nickName?.charAt(0).toUpperCase() }}</div>
                       <div class="c-body">
                         <span class="c-name">{{ reply.nickName }}</span>
                         <span v-if="reply.replyNickName" class="reply-to">回复 <span class="c-name">@{{ reply.replyNickName }}</span></span>
@@ -342,6 +346,7 @@ async function deleteComment(comment) {
 .author-row { display: flex; align-items: center; justify-content: space-between; }
 .author-link { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 .author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--color-accent), #7c3aed); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: #fff; flex-shrink: 0; }
+.author-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 .author-name { font-size: 14px; font-weight: 600; color: var(--text-1); }
 .author-fans { font-size: 12px; color: var(--text-2); margin-top: 2px; }
 .follow-btn { padding: 6px 16px; border-radius: 20px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: var(--transition); font-family: var(--font-body); background: var(--color-accent); color: #fff; }
@@ -359,6 +364,7 @@ async function deleteComment(comment) {
 
 .comment-input-row { display: flex; gap: 12px; margin-bottom: 24px; }
 .ci-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--color-accent), #7c3aed); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0; margin-top: 4px; }
+.ci-avatar-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; margin-top: 4px; }
 .ci-box { flex: 1; }
 .ci-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 
@@ -369,7 +375,9 @@ async function deleteComment(comment) {
 .comment-item { padding: 16px 0; border-bottom: 1px solid var(--border); }
 .comment-main { display: flex; gap: 12px; }
 .c-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: var(--text-2); flex-shrink: 0; }
+.c-avatar-img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 .c-avatar--sm { width: 26px; height: 26px; font-size: 10px; }
+.c-avatar-img--sm { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 .c-body { flex: 1; }
 .c-name { font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 4px; }
 .c-text { font-size: 14px; color: var(--text-1); line-height: 1.6; }

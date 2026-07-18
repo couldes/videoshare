@@ -113,6 +113,7 @@ import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import ChannelHeader from '@/components/ChannelHeader.vue'
 import VideoCard from '@/components/VideoCard.vue'
 import { useUserStore } from '@/stores/user'
+import { auth } from '@/utils/auth'
 import { profileApi, videoApi, playlistApi } from '@/api'
 
 const route     = useRoute()
@@ -158,6 +159,11 @@ async function loadProfile() {
     editForm.backgroundUrl = profile.value.backgroundUrl || ''
     avatarPreview.value = profile.value.avatarUrl || ''
     bgPreview.value = profile.value.backgroundUrl || ''
+    // ★ 查看自己的主页时同步 store，确保 NavBar 等组件头像实时更新
+    if (isSelf && profile.value.avatarUrl && profile.value.avatarUrl !== userStore.userInfo?.avatarUrl) {
+      userStore.userInfo.avatarUrl = profile.value.avatarUrl
+      auth.setInfo(userStore.userInfo)
+    }
     await loadUserVideos()
   } finally { profileLoading.value = false }
 }
@@ -225,6 +231,11 @@ async function saveProfile() {
     profile.value.bio = editForm.bio
     profile.value.avatarUrl = editForm.avatarUrl || null
     profile.value.backgroundUrl = editForm.backgroundUrl || null
+    // ★ 同步更新 store 和 localStorage，确保 NavBar 等组件读到新头像
+    if (userStore.userInfo) {
+      userStore.userInfo.avatarUrl = editForm.avatarUrl || null
+      auth.setInfo(userStore.userInfo)
+    }
     showEditDialog.value = false
     ElMessage.success('资料已更新')
   } finally { saving.value = false }

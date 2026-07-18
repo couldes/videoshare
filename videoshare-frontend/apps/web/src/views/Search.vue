@@ -54,7 +54,8 @@
       <div v-if="userResults.length > 0" class="user-list">
         <RouterLink v-for="user in userResults" :key="user.userId"
           :to="`/user/${user.userId}`" class="user-card">
-          <div class="user-avatar">{{ user.nickName?.charAt(0).toUpperCase() }}</div>
+          <img v-if="user.avatarUrl" :src="user.avatarUrl" class="user-avatar-img" alt="" />
+          <div v-else class="user-avatar">{{ user.nickName?.charAt(0).toUpperCase() }}</div>
           <div class="user-info">
             <span class="user-name">{{ user.nickName }}</span>
             <span class="user-email">{{ user.email }}</span>
@@ -192,6 +193,7 @@ async function loadMore() { currentPage.value++; await searchVideos(false) }
   border-radius: var(--radius-md); text-decoration: none; transition: var(--transition);
 }
 .user-card:hover { background: var(--bg-hover); }
+.user-avatar-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 .user-avatar {
   width: 44px; height: 44px; border-radius: 50%;
   background: linear-gradient(135deg, var(--color-accent), #7c3aed);

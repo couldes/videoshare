@@ -45,7 +45,8 @@
         <el-table-column label="用户信息" min-width="200">
           <template #default="{ row }">
             <div class="user-cell">
-              <div class="user-avatar">{{ row.nickName?.charAt(0).toUpperCase() }}</div>
+              <img v-if="row.avatarUrl" :src="row.avatarUrl" class="user-avatar-img" alt="" />
+              <div v-else class="user-avatar">{{ row.nickName?.charAt(0).toUpperCase() }}</div>
               <div class="user-meta">
                 <div class="user-name">{{ row.nickName }}</div>
                 <div class="user-email mono">{{ row.email }}</div>
@@ -179,7 +180,8 @@
             <el-table-column label="用户" min-width="300">
               <template #default="{ row }">
                 <div class="user-cell">
-                  <div class="user-avatar">{{ row.nickName?.charAt(0).toUpperCase() }}</div>
+                  <img v-if="row.avatarUrl" :src="row.avatarUrl" class="user-avatar-img" alt="" />
+                  <div v-else class="user-avatar">{{ row.nickName?.charAt(0).toUpperCase() }}</div>
                   <div class="user-meta">
                     <div class="user-name">{{ row.nickName }}</div>
                     <div class="user-email mono">{{ row.userId }}</div>
@@ -200,7 +202,8 @@
             <el-table-column label="用户" min-width="300">
               <template #default="{ row }">
                 <div class="user-cell">
-                  <div class="user-avatar">{{ row.nickName?.charAt(0).toUpperCase() }}</div>
+                  <img v-if="row.avatarUrl" :src="row.avatarUrl" class="user-avatar-img" alt="" />
+                  <div v-else class="user-avatar">{{ row.nickName?.charAt(0).toUpperCase() }}</div>
                   <div class="user-meta">
                     <div class="user-name">{{ row.nickName }}</div>
                     <div class="user-email mono">{{ row.userId }}</div>
@@ -367,6 +370,7 @@ async function loadHistoryData(tab) {
 .count-tag { font-size: 11px; color: var(--text-muted); letter-spacing: .06em; padding: 4px 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 3px; }
 .table-wrap { background: var(--bg-panel); border: 1px solid var(--border); border-top: none; }
 .user-cell  { display: flex; align-items: center; gap: 10px; }
+.user-avatar-img { width: 30px; height: 30px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; }
 .user-avatar { width: 30px; height: 30px; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--color-accent), #7c3aed); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #fff; flex-shrink: 0; }
 .user-name   { font-size: 13px; font-weight: 600; color: var(--text-1); }
 .user-email  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }

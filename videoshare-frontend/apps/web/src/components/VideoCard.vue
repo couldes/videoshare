@@ -6,8 +6,11 @@
     </div>
     <div class="video-info">
       <RouterLink :to="`/user/${video.userInfo?.userId || video.userId}`"
-        class="channel-avatar" @click.stop>
-        {{ (video.channelName || video.userInfo?.nickName)?.charAt(0).toUpperCase() }}
+        class="channel-avatar-link" @click.stop>
+        <img v-if="video.userInfo?.avatarUrl" :src="video.userInfo.avatarUrl" class="channel-avatar-img" alt="" />
+        <div v-else class="channel-avatar">
+          {{ (video.channelName || video.userInfo?.nickName)?.charAt(0).toUpperCase() }}
+        </div>
       </RouterLink>
       <div class="video-meta">
         <h3 class="video-title" :title="video.title">{{ video.title }}</h3>
@@ -46,6 +49,12 @@ defineProps({ video: { type: Object, required: true } })
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 13px; color: #fff;
   flex-shrink: 0; margin-top: 2px; text-decoration: none;
+}
+.channel-avatar-link {
+  width: 36px; height: 36px; flex-shrink: 0; margin-top: 2px; text-decoration: none; display: block;
+}
+.channel-avatar-img {
+  width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: block;
 }
 .video-meta { flex: 1; min-width: 0; }
 .video-title {
