@@ -24,8 +24,3 @@ project:
 snowflake:
   worker-id: 3
   datacenter-id: 1
-
-# resource 调用 web 内部接口的基础地址
-web:
-  inner-api:
-    base-url: http://127.0.0.1:7070

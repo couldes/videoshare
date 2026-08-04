@@ -1,5 +1,6 @@
 package com.videoshare.web.service.impl;
 
+import com.videoshare.common.dto.TranscodeNotifyReq;
 import com.videoshare.common.entity.TranscodeJob;
 import com.videoshare.web.client.ResourceTranscodeClient;
 import com.videoshare.web.mapper.TranscodeJobMapper;
@@ -38,7 +39,10 @@ public class TranscodeServiceImpl implements TranscodeService {
             return;
         }
         try {
-            resourceTranscodeClient.notifyTranscode(videoId, needCover);
+            TranscodeNotifyReq req = new TranscodeNotifyReq();
+            req.setVideoId(videoId);
+            req.setNeedCover(needCover);
+            resourceTranscodeClient.notifyTranscode(req);
             transcodeJobMapper.updateStatus(job.getJobId(), 1, "");
             log.info("Transcode job handed off to resource: videoId={}", videoId);
         } catch (Exception e) {

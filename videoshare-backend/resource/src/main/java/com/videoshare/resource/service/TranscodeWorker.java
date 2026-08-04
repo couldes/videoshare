@@ -2,6 +2,7 @@ package com.videoshare.resource.service;
 
 import com.videoshare.common.dto.TranscodeJobInfo;
 import com.videoshare.common.dto.TranscodeResultReq;
+import com.videoshare.common.vo.ResponseVO;
 import com.videoshare.resource.client.WebInnerApiClient;
 import com.videoshare.resource.component.VideoTranscoder;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class TranscodeWorker {
 
     @Async("transcodeExecutor")
     public void execute(String videoId, boolean needCover) {
-        TranscodeJobInfo job = webInnerApiClient.getTranscodeJob(videoId);
+        TranscodeJobInfo job = fetchJob(videoId);
         if (job == null) {
             log.error("转码任务信息获取失败 videoId={}", videoId);
             reportResult(videoId, 3, null, null, "转码任务信息获取失败");
@@ -52,6 +53,22 @@ public class TranscodeWorker {
         }
     }
 
+    /** 经 Feign 拉取任务并解包 ResponseVO；失败返回 null（沿用直连时代语义） */
+    private TranscodeJobInfo fetchJob(String videoId) {
+        try {
+            ResponseVO<TranscodeJobInfo> vo = webInnerApiClient.getTranscodeJob(videoId);
+            if (vo == null || !"success".equals(vo.getStatus()) || vo.getData() == null) {
+                log.warn("getTranscodeJob failed: videoId={}, status={}, info={}",
+                        videoId, vo == null ? null : vo.getStatus(), vo == null ? null : vo.getInfo());
+                return null;
+            }
+            return vo.getData();
+        } catch (Exception e) {
+            log.error("getTranscodeJob error: videoId={}", videoId, e);
+            return null;
+        }
+    }
+
     private void reportResult(String videoId, Integer status, Integer duration, String coverPath, String errorMsg) {
         TranscodeResultReq req = new TranscodeResultReq();
         req.setVideoId(videoId);
@@ -59,6 +76,11 @@ public class TranscodeWorker {
         req.setDuration(duration);
         req.setCoverPath(coverPath);
         req.setErrorMsg(errorMsg);
-        webInnerApiClient.reportResult(req);
+        try {
+            webInnerApiClient.reportResult(req);
+            log.info("reportResult ok: videoId={}, status={}", req.getVideoId(), req.getStatus());
+        } catch (Exception e) {
+            log.error("reportResult error: videoId={}", req.getVideoId(), e);
+        }
     }
 }
