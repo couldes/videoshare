@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -167,7 +169,14 @@ public class VideoServiceImpl implements VideoService {
         String outputDir = getHlsDir() + videoId + "/";
         transcodeService.createJob(videoId, inputPath, outputDir);
         boolean needCover = coverUrl == null || coverUrl.isEmpty();
-        transcodeService.notifyTranscode(videoId, needCover);
+
+        // 必须在事务提交后通知 resource，否则异步 worker 回调拉任务时 job 尚不可见
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                transcodeService.notifyTranscode(videoId, needCover);
+            }
+        });
 
         syncToES(videoId);
     }
