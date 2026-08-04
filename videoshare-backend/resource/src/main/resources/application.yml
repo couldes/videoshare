@@ -6,9 +6,6 @@ server:
       force: true
 
 spring:
-  application:
-    name: videoshare-resource
-
   # 文件上传配置（与 web 一致，视频最大 500MB）
   servlet:
     multipart:

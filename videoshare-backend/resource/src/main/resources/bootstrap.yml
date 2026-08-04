@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: resource
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      server-addr: 127.0.0.1:8848
+      discovery:
+        fail-fast: false   # 注册中心不可用时注册失败不阻塞启动（F7.1）
+      config:
+        file-extension: yml
+        fail-fast: false
+        timeout: 3000

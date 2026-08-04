@@ -6,9 +6,6 @@ server:
       force: true
 
 spring:
-  application:
-    name: videoshare-web
-
   # 文件上传配置
   servlet:
     multipart:

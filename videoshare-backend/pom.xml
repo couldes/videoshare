@@ -42,6 +42,8 @@
         <captcha.verion>1.6.2</captcha.verion>
         <es.version>3.3.2</es.version>
         <spring-cloud.version>2021.0.9</spring-cloud.version>
+        <spring-cloud-alibaba.version>2021.0.5.0</spring-cloud-alibaba.version>
+        <nacos-client.version>2.2.1</nacos-client.version>
     </properties>
 
     <dependencyManagement>
@@ -53,6 +55,22 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud Alibaba BOM -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- nacos-client 钉版：覆盖 SCA 默认 2.2.0，规避 PerfMarkImpl 类加载异常 -->
+            <dependency>
+                <groupId>com.alibaba.nacos</groupId>
+                <artifactId>nacos-client</artifactId>
+                <version>${nacos-client.version}</version>
             </dependency>
 
             <dependency>
