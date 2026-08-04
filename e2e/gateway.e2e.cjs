@@ -106,6 +106,73 @@ async function main() {
     `CheckCode endpoint accessible (status ${ccResp.status()})`);
 
   // ============================================================
+  // Resource: unauth upload → 401
+  // ============================================================
+  console.log('\n=== Resource: unauth upload blocked ===');
+
+  const unauthUp = await page.request.post(`${GATEWAY}/resource/upload`, {
+    multipart: { file: { name: 'test.mp4', mimeType: 'video/mp4', buffer: Buffer.from([0,1,2,3]) } }
+  });
+  assert(unauthUp.status() === 401, `POST /resource/upload without login → 401 (got ${unauthUp.status()})`);
+  const unauthBody = await unauthUp.json();
+  assert(unauthBody.status === 'error', 'Unauth upload body has status=error');
+  assert(unauthBody.info.includes('登录'), 'Unauth upload mentions login');
+  console.log(`  Body: ${JSON.stringify(unauthBody)}`);
+
+  // ============================================================
+  // Resource: authed upload → 200 + media fetch round-trip
+  // ============================================================
+  console.log('\n=== Resource: authed upload + media round-trip ===');
+
+  const upResp = await page.request.post(`${GATEWAY}/resource/upload`, {
+    headers: { 'X-User-Id': 'u-e2e-test' },
+    multipart: { file: { name: 'e2e-clip.mp4', mimeType: 'video/mp4', buffer: Buffer.from([1,2,3,4,5]) } }
+  });
+  assert(upResp.status() === 200, `POST /resource/upload with X-User-Id → 200 (got ${upResp.status()})`);
+  const upBody = await upResp.json();
+  assert(upBody.status === 'success', 'Upload body has status=success');
+  assert(upBody.data && upBody.data.videoUrl.startsWith('/video/resource/'),
+    `videoUrl starts with /video/resource/ (${upBody.data && upBody.data.videoUrl})`);
+  console.log(`  videoUrl: ${upBody.data && upBody.data.videoUrl}`);
+
+  // 媒体读取：经 gateway /web/video/resource/ 取回刚上传的文件 → 200
+  const mediaResp = await page.request.get(`${GATEWAY}/web${upBody.data.videoUrl}`);
+  assert(mediaResp.status() === 200,
+    `GET /web${upBody.data.videoUrl} → 200 (got ${mediaResp.status()})`);
+
+  // ============================================================
+  // Resource: authed image upload + /web/images/ fetch
+  // ============================================================
+  console.log('\n=== Resource: image upload + /web/images/ fetch ===');
+
+  const imgUp = await page.request.post(`${GATEWAY}/resource/uploadImage`, {
+    headers: { 'X-User-Id': 'u-e2e-test' },
+    multipart: {
+      file: { name: 'a.png', mimeType: 'image/png', buffer: Buffer.from([0x89,0x50,0x4e,0x47]) },
+      type: 'avatar'
+    }
+  });
+  assert(imgUp.status() === 200, `POST /resource/uploadImage → 200 (got ${imgUp.status()})`);
+  const imgBody = await imgUp.json();
+  assert(imgBody.status === 'success' && imgBody.data && imgBody.data.url.startsWith('/images/'),
+    `Image upload returns /images/ url (${imgBody.data && imgBody.data.url})`);
+  const imgUrlPath = imgBody.data.url.split('?')[0];
+  const imgFetch = await page.request.get(`${GATEWAY}/web${imgUrlPath}`);
+  assert(imgFetch.status() === 200,
+    `GET /web${imgUrlPath} → 200 (got ${imgFetch.status()})`);
+
+  // ============================================================
+  // Resource: innerApi via gateway → 403
+  // ============================================================
+  console.log('\n=== Resource: innerApi blocked ===');
+
+  const innerResourceResp = await page.request.get(`${GATEWAY}/web/innerApi/video/transcodeJob/xxx`);
+  assert(innerResourceResp.status() === 403, '/web/innerApi/video/transcodeJob → 403');
+  const innerResourceBody = await innerResourceResp.json();
+  assert(innerResourceBody.info.includes('内部接口'), 'innerApi message mentions 内部接口');
+  console.log(`  Body: ${JSON.stringify(innerResourceBody)}`);
+
+  // ============================================================
   // Summary
   // ============================================================
   console.log(`\n========================================`);
