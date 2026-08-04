@@ -22,10 +22,10 @@ public class VideoSearchServiceImpl implements VideoSearchService {
 
     private static final Logger log = LoggerFactory.getLogger(VideoSearchServiceImpl.class);
 
-    @Autowired
+    @Autowired(required = false)
     private ElasticsearchOperations elasticsearchOperations;
 
-    @Autowired
+    @Autowired(required = false)
     private VideoSearchRepository videoSearchRepository;
 
     @Override
