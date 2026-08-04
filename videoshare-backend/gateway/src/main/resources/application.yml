@@ -5,6 +5,31 @@ spring:
   cloud:
     gateway:
       routes:
+        # 资源服务：上传走 UserAuth 鉴权（媒体路由必须在 /web/** 之前）
+        - id: resource-route
+          uri: http://127.0.0.1:7074
+          predicates:
+            - Path=/resource/**
+          filters:
+            - UserAuth
+        - id: web-hls-route
+          uri: http://127.0.0.1:7074
+          predicates:
+            - Path=/web/hls/**
+          filters:
+            - StripPrefix=1
+        - id: web-images-route
+          uri: http://127.0.0.1:7074
+          predicates:
+            - Path=/web/images/**
+          filters:
+            - StripPrefix=1
+        - id: web-video-resource-route
+          uri: http://127.0.0.1:7074
+          predicates:
+            - Path=/web/video/resource/**
+          filters:
+            - StripPrefix=1
         - id: web-route
           uri: http://127.0.0.1:7070
           predicates:

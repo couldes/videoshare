@@ -1,5 +1,5 @@
 server:
-  port: 7075
+  port: 7070
   servlet:
     encoding:
       charset: UTF-8
@@ -7,7 +7,7 @@ server:
 
 spring:
   application:
-    name: videoshare-admin
+    name: videoshare-web
 
   # 文件上传配置
   servlet:
@@ -70,7 +70,7 @@ mybatis:
 logging:
   level:
     root: info
-    com.videoshare.admin: debug # 自己的业务代码开启 debug
+    com.videoshare.web: debug # 自己的业务代码开启 debug
     org.springframework: warn
 
 # 自定义配置

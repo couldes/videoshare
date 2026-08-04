@@ -1,0 +1,34 @@
+server:
+  port: 7074
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  application:
+    name: videoshare-resource
+
+  # 文件上传配置（与 web 一致，视频最大 500MB）
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+logging:
+  level:
+    com.videoshare.resource: debug
+
+# 自定义配置
+project:
+  folder: "d:/webser/videoshare/"
+
+# 雪花ID（resource 用 worker-id=3，避免与 web=1 / admin=2 冲突）
+snowflake:
+  worker-id: 3
+  datacenter-id: 1
+
+# resource 调用 web 内部接口的基础地址
+web:
+  inner-api:
+    base-url: http://127.0.0.1:7070

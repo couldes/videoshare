@@ -19,6 +19,7 @@
         <module>admin</module>
         <module>web</module>
         <module>gateway</module>
+        <module>resource</module>
     </modules>
 
     <properties>

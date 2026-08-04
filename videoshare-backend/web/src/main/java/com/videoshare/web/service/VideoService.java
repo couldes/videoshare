@@ -4,14 +4,12 @@ package com.videoshare.web.service;
 import com.videoshare.common.query.VideoQuery;
 import com.videoshare.common.vo.PaginationResultVO;
 import com.videoshare.common.vo.VideoInfoVO;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
 public interface VideoService {
     PaginationResultVO<VideoInfoVO> getVideoList(VideoQuery query);
     VideoInfoVO getVideoDetail(String videoId, String currentUserId);
-    Map<String, Object> uploadVideoFile(MultipartFile file, String userId);
     void publishVideo(String userId, String videoId, String title, String description,
                       String coverUrl, String videoUrl, String category, String tags);
     void updateVideo(String userId, String videoId, String title, String description,

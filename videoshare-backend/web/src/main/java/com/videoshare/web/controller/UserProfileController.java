@@ -5,13 +5,9 @@ import com.videoshare.web.mapper.UserInfoMapper;
 import com.videoshare.common.entity.UserInfo;
 import com.videoshare.common.exception.BusinessException;
 import com.videoshare.common.vo.ResponseVO;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -35,9 +31,6 @@ public class UserProfileController extends ABaseController {
     @Resource
     private UserInfoMapper     userInfoMapper;
 
-    @Value("${project.folder:d:/webser/videoshare/}")
-    private String projectFolder;
-
     /** 用户公开主页信息 */
     @GetMapping("/profile/{userId}")
     public ResponseVO getUserProfile(
@@ -45,46 +38,6 @@ public class UserProfileController extends ABaseController {
             HttpServletRequest request) {
         String currentUserId = getUserIdFromToken(request); // 可能未登录
         return getSuccessResponseVO(userProfileService.getProfile(userId, currentUserId));
-    }
-
-    /** 上传头像或背景图 */
-    @PostMapping("/uploadImage")
-    public ResponseVO uploadImage(
-            @RequestParam MultipartFile file,
-            @RequestParam String type, // "avatar" | "background"
-            HttpServletRequest request) {
-        String userId = requireLogin(request);
-        if (!"avatar".equals(type) && !"background".equals(type)) {
-            return getFailureResponseVO("type 必须是 avatar 或 background");
-        }
-        long maxSize = "avatar".equals(type) ? 2 * 1024 * 1024 : 5 * 1024 * 1024;
-        if (file.getSize() > maxSize) {
-            return getFailureResponseVO("文件大小超过限制");
-        }
-
-        String ext = "jpg";
-        String originalName = file.getOriginalFilename();
-        if (originalName != null && originalName.contains(".")) {
-            ext = originalName.substring(originalName.lastIndexOf(".") + 1);
-        }
-
-        String dir = projectFolder.endsWith("/") || projectFolder.endsWith("\\")
-                ? projectFolder + "images/" + userId + "/"
-                : projectFolder + "/images/" + userId + "/";
-        String fileName = type + "." + ext;
-        File dest = new File(dir + fileName);
-        dest.getParentFile().mkdirs();
-
-        try {
-            file.transferTo(dest);
-        } catch (IOException e) {
-            return getFailureResponseVO("上传失败");
-        }
-
-        String url = "/images/" + userId + "/" + fileName + "?t=" + System.currentTimeMillis();
-        Map<String, String> result = new HashMap<>();
-        result.put("url", url);
-        return getSuccessResponseVO(result);
     }
 
     /** 更新个人简介（仅限本人）*/

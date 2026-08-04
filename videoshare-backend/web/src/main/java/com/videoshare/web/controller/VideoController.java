@@ -5,7 +5,6 @@ import com.videoshare.web.service.VideoService;
 import com.videoshare.common.vo.ResponseVO;
 import com.videoshare.common.query.VideoQuery;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
@@ -19,7 +18,6 @@ import java.util.Collections;
  *   GET  /video/search        → 全文搜索
  *   GET  /video/list          → 首页视频列表（分页+分类）
  *   GET  /video/{videoId}     → 视频详情（含播放地址）
- *   POST /video/upload        → 上传视频（需登录）
  *   POST /video/publish       → 发布视频信息（需登录）
  *   GET  /video/user/{userId} → 某用户的视频列表（个人主页用）
  *   POST /video/action        → 点赞/收藏视频（需登录）
@@ -85,18 +83,6 @@ public class VideoController extends ABaseController {
     public ResponseVO getVideoDetail(@PathVariable String videoId, HttpServletRequest request) {
         String userId = getUserIdFromToken(request); // 可能为 null（未登录也能看）
         return getSuccessResponseVO(videoService.getVideoDetail(videoId, userId));
-    }
-
-    /**
-     * 上传视频文件（分片上传简化版）
-     * 实际生产建议用 MinIO / OSS，这里返回文件访问 URL
-     */
-    @PostMapping("/upload")
-    public ResponseVO uploadVideo(
-            @RequestParam MultipartFile file,
-            HttpServletRequest request) {
-        String userId = requireLogin(request); // 未登录抛异常
-        return getSuccessResponseVO(videoService.uploadVideoFile(file, userId));
     }
 
     /** 发布视频（填写标题、描述、封面、分类后调用）*/

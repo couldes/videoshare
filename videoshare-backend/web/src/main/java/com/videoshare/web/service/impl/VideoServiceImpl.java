@@ -6,7 +6,6 @@ import com.videoshare.common.entity.VideoInfo;
 import com.videoshare.common.enums.VideoStatusEnum;
 import com.videoshare.common.exception.BusinessException;
 import com.videoshare.common.query.VideoQuery;
-import com.videoshare.common.utils.SnowflakeIdGenerator;
 import com.videoshare.common.vo.PaginationResultVO;
 import com.videoshare.common.vo.UserInfoVO;
 import com.videoshare.common.vo.VideoInfoVO;
@@ -22,14 +21,12 @@ import com.videoshare.common.search.VideoSearchService;
 import com.videoshare.common.search.SearchResult;
 import com.videoshare.common.search.VideoSearchDocument;
 import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,7 +65,6 @@ public class VideoServiceImpl implements VideoService {
     @Resource private UserInfoMapper      userInfoMapper;
     @Resource private UserActionMapper    userActionMapper;
     @Resource private com.videoshare.web.mapper.UserFollowMapper userFollowMapper;
-    @Resource private SnowflakeIdGenerator snowflakeIdGenerator;
     @Resource private WatchHistoryService watchHistoryService;
     @Resource private RedisComponent      redisComponent;
     @Resource private NotificationService notificationService;
@@ -132,34 +128,6 @@ public class VideoServiceImpl implements VideoService {
     }
 
     // ============================================================
-    //  上传视频文件（简化版，生产环境替换为 OSS）
-    // ============================================================
-    @Override
-    public Map<String, Object> uploadVideoFile(MultipartFile file, String userId) {
-        String originalName = file.getOriginalFilename();
-        String ext = originalName != null && originalName.contains(".")
-                ? originalName.substring(originalName.lastIndexOf("."))
-                : ".mp4";
-
-        String videoId = snowflakeIdGenerator.nextIdString();
-        String fileName = videoId + ext;
-        File dest = new File(getUploadDir() + fileName);
-        dest.getParentFile().mkdirs();
-
-        try {
-            file.transferTo(dest);
-        } catch (IOException e) {
-            throw new BusinessException("视频上传失败，请重试");
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("videoId", videoId);
-        result.put("videoUrl", "/video/resource/" + fileName);
-        result.put("duration", 0);
-        return result;
-    }
-
-    // ============================================================
     //  发布视频
     // ============================================================
     @Override
@@ -194,12 +162,12 @@ public class VideoServiceImpl implements VideoService {
         video.setFavoriteCount(0);
         videoInfoMapper.insert(video);
 
-        // 触发异步转码
+        // 创建转码任务并通知 resource 执行
         String inputPath = getUploadDir() + extractFileName(videoUrl);
         String outputDir = getHlsDir() + videoId + "/";
         transcodeService.createJob(videoId, inputPath, outputDir);
         boolean needCover = coverUrl == null || coverUrl.isEmpty();
-        transcodeService.transcodeAsync(videoId, inputPath, outputDir, needCover);
+        transcodeService.notifyTranscode(videoId, needCover);
 
         syncToES(videoId);
     }
