@@ -33,7 +33,9 @@ module.exports = mergeConfig(
         '/notification/': { target: 'http://localhost:7071', changeOrigin: true, rewrite: rewriteToGateway },
         '/analytics/':   { target: 'http://localhost:7071', changeOrigin: true, rewrite: rewriteToGateway },
         '/hls/':         { target: 'http://localhost:7071', changeOrigin: true, rewrite: rewriteToGateway },
-        '/images/':      { target: 'http://localhost:7071', changeOrigin: true, rewrite: rewriteToGateway }
+        '/images/':      { target: 'http://localhost:7071', changeOrigin: true, rewrite: rewriteToGateway },
+        // 上传路径直通 gateway /resource/**（不加大 /web 前缀，resource-route 原样转发）
+        '/resource':     { target: 'http://localhost:7071', changeOrigin: true }
       }
     }
   }

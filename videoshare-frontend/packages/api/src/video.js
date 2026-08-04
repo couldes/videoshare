@@ -25,18 +25,18 @@ export function createVideoApi(request) {
       request({ method: 'GET', url: `/video/${videoId}` }),
 
     /**
-     * 上传视频文件
-     * POST /video/upload
+     * 上传视频文件（经 gateway /resource/** 到 resource 服务）
+     * POST /resource/upload
      * @param {File} file
      * @param {Function} onProgress  上传进度回调 (percent: number) => void
-     * @returns {{ videoId, status }}  status: 0=处理中 1=就绪
+     * @returns {{ videoId, videoUrl, duration }}
      */
     uploadVideo: (file, onProgress) => {
       const form = new FormData()
       form.append('file', file)
       return request({
         method: 'POST',
-        url: '/video/upload',
+        url: '/resource/upload',
         data: form,
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (e) => {

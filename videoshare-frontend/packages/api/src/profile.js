@@ -65,8 +65,8 @@ export function createProfileApi(request) {
       request({ method: 'GET', url: '/user/favorites', params }),
 
     /**
-     * 上传头像或背景图
-     * POST /user/uploadImage
+     * 上传头像或背景图（经 gateway /resource/** 到 resource 服务）
+     * POST /resource/uploadImage
      * @param {File} file
      * @param {"avatar"|"background"} type
      * @param {Function} onProgress
@@ -78,7 +78,7 @@ export function createProfileApi(request) {
       form.append('type', type)
       return request({
         method: 'POST',
-        url: '/user/uploadImage',
+        url: '/resource/uploadImage',
         data: form,
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (e) => {
