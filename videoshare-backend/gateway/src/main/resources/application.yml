@@ -1,0 +1,34 @@
+server:
+  port: 7071
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: web-route
+          uri: http://127.0.0.1:7070
+          predicates:
+            - Path=/web/**
+          filters:
+            - StripPrefix=1
+        - id: admin-route
+          uri: http://127.0.0.1:7075
+          predicates:
+            - Path=/admin/**
+          filters:
+            - AdminAuth
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+  redis:
+    host: 127.0.0.1
+    port: 6379
+
+logging:
+  level:
+    com.videoshare.gateway: debug
