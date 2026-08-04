@@ -32,11 +32,11 @@ public class TranscodeServiceImpl implements TranscodeService {
     }
 
     @Override
-    public void notifyTranscode(String videoId, boolean needCover) {
+    public boolean notifyTranscode(String videoId, boolean needCover) {
         TranscodeJob job = transcodeJobMapper.selectByVideoId(videoId);
         if (job == null) {
             log.error("TranscodeJob not found for videoId: {}", videoId);
-            return;
+            return false;
         }
         try {
             TranscodeNotifyReq req = new TranscodeNotifyReq();
@@ -45,9 +45,11 @@ public class TranscodeServiceImpl implements TranscodeService {
             resourceTranscodeClient.notifyTranscode(req);
             transcodeJobMapper.updateStatus(job.getJobId(), 1, "");
             log.info("Transcode job handed off to resource: videoId={}", videoId);
+            return true;
         } catch (Exception e) {
-            // resource 不可用时不阻断发布，job 保持待处理(0)，重试留待后续
+            // resource 不可用时不阻断发布，job 保持待处理(0)，交由对账任务重试
             log.error("通知 resource 转码失败 videoId={}", videoId, e);
+            return false;
         }
     }
 }

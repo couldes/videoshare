@@ -10,6 +10,7 @@
         <result column="input_path"   property="inputPath"/>
         <result column="output_path"  property="outputPath"/>
         <result column="error_msg"    property="errorMsg"/>
+        <result column="retry_count"  property="retryCount"/>
         <result column="create_time"  property="createTime"/>
         <result column="update_time"  property="updateTime"/>
     </resultMap>
@@ -31,5 +32,39 @@
     <select id="selectByVideoId" resultMap="TranscodeJobMap">
         SELECT * FROM transcode_job WHERE video_id = #{videoId}
     </select>
+
+    <select id="selectStalePending" resultMap="TranscodeJobMap">
+        SELECT * FROM transcode_job
+        WHERE status = 0
+          AND retry_count &lt; #{maxRetries}
+          AND update_time &lt; DATE_SUB(NOW(), INTERVAL #{staleMinutes} MINUTE)
+    </select>
+
+    <select id="selectMaxedPending" resultMap="TranscodeJobMap">
+        SELECT * FROM transcode_job
+        WHERE status = 0
+          AND retry_count &gt;= #{maxRetries}
+    </select>
+
+    <select id="selectStaleProcessing" resultMap="TranscodeJobMap">
+        SELECT * FROM transcode_job
+        WHERE status = 1
+          AND update_time &lt; DATE_SUB(NOW(), INTERVAL #{timeoutMinutes} MINUTE)
+    </select>
+
+    <update id="claimPending">
+        UPDATE transcode_job
+        SET retry_count = retry_count + 1, update_time = NOW()
+        WHERE job_id = #{jobId}
+          AND status = 0
+          AND retry_count &lt; #{maxRetries}
+    </update>
+
+    <update id="markFailed">
+        UPDATE transcode_job
+        SET status = 3, error_msg = #{errorMsg}, update_time = NOW()
+        WHERE job_id = #{jobId}
+          AND status = #{expectedStatus}
+    </update>
 
 </mapper>

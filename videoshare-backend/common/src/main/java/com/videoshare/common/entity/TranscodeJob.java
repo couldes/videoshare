@@ -13,6 +13,8 @@ public class TranscodeJob {
     private String  inputPath;
     private String  outputPath;
     private String  errorMsg;
+    /** 对账重试次数 */
+    private Integer retryCount;
     private Date    createTime;
     private Date    updateTime;
 
@@ -28,6 +30,8 @@ public class TranscodeJob {
     public void    setOutputPath(String v){ this.outputPath = v; }
     public String  getErrorMsg()   { return errorMsg; }
     public void    setErrorMsg(String v)  { this.errorMsg = v; }
+    public Integer getRetryCount() { return retryCount; }
+    public void    setRetryCount(Integer v) { this.retryCount = v; }
     public Date    getCreateTime() { return createTime; }
     public void    setCreateTime(Date v)  { this.createTime = v; }
     public Date    getUpdateTime() { return updateTime; }

@@ -78,3 +78,12 @@ project:
 snowflake:
   worker-id: 1
   datacenter-id: 1
+
+# 转码对账配置
+transcode:
+  reconcile:
+    enabled: true
+    fixed-rate-ms: 60000
+    pending-stale-minutes: 1
+    processing-timeout-minutes: 30
+    max-retries: 3
