@@ -23,4 +23,10 @@ public interface UserActionMapper {
     Integer delete(@Param("userId") String userId,
                    @Param("targetId") String targetId,
                    @Param("actionType") Integer actionType);
+
+    /** 删除某视频的点赞/收藏记录（actionType=1 赞视频 / 2 收藏视频） */
+    Integer deleteVideoLikes(@Param("videoId") String videoId);
+
+    /** 删除某视频评论的点赞记录（actionType=3，target_id 指向该视频的评论） */
+    Integer deleteCommentLikes(@Param("videoId") String videoId);
 }

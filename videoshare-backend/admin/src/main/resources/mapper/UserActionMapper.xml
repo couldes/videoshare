@@ -25,4 +25,20 @@
         AND action_type = #{actionType}
     </delete>
 
+    <!-- 删除某视频的点赞/收藏记录（actionType 1/2） -->
+    <delete id="deleteVideoLikes">
+        DELETE FROM user_action
+        WHERE target_id = #{videoId} AND action_type IN (1, 2)
+    </delete>
+
+    <!-- 删除指向该视频评论的点赞记录（actionType 3，删评论前必须执行） -->
+    <delete id="deleteCommentLikes">
+        DELETE FROM user_action
+        WHERE action_type = 3
+          AND target_id IN (
+            SELECT comment_id FROM comment_info
+            WHERE video_id = #{videoId}
+          )
+    </delete>
+
 </mapper>

@@ -3,6 +3,12 @@ package com.videoshare.admin.service.impl;
 
 import com.videoshare.admin.mapper.AdminVideoMapper;
 import com.videoshare.admin.mapper.AdminUserMapper;
+import com.videoshare.admin.mapper.CommentMapper;
+import com.videoshare.admin.mapper.NotificationMapper;
+import com.videoshare.admin.mapper.PlaylistVideoMapper;
+import com.videoshare.admin.mapper.TranscodeJobMapper;
+import com.videoshare.admin.mapper.UserActionMapper;
+import com.videoshare.admin.mapper.WatchHistoryMapper;
 import com.videoshare.admin.service.AdminVideoService;
 import com.videoshare.common.vo.PaginationResultVO;
 import com.videoshare.common.entity.UserInfo;
@@ -13,6 +19,7 @@ import com.videoshare.common.query.VideoQuery;
 import com.videoshare.common.search.VideoSearchService;
 import com.videoshare.common.search.VideoSearchDocument;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -33,6 +40,24 @@ public class AdminVideoServiceImpl implements AdminVideoService {
 
     @Resource
     private VideoSearchService videoSearchService;
+
+    @Resource
+    private CommentMapper commentMapper;
+
+    @Resource
+    private UserActionMapper userActionMapper;
+
+    @Resource
+    private WatchHistoryMapper watchHistoryMapper;
+
+    @Resource
+    private PlaylistVideoMapper playlistVideoMapper;
+
+    @Resource
+    private NotificationMapper notificationMapper;
+
+    @Resource
+    private TranscodeJobMapper transcodeJobMapper;
 
     @Override
     public PaginationResultVO<VideoInfo> getVideoList(VideoQuery query) {
@@ -78,9 +103,20 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteVideo(String videoId) {
-        Integer rows = adminVideoMapper.deleteByVideoId(videoId);
-        if (rows == 0) throw new BusinessException("视频不存在或已删除");
+        if (adminVideoMapper.selectByVideoId(videoId) == null) {
+            throw new BusinessException("视频不存在或已删除");
+        }
+        // 评论点赞先于评论删除：deleteCommentLikes 的子查询依赖 comment_info 行存在
+        userActionMapper.deleteCommentLikes(videoId);
+        userActionMapper.deleteVideoLikes(videoId);
+        commentMapper.deleteByVideoId(videoId);
+        watchHistoryMapper.deleteByVideoId(videoId);
+        playlistVideoMapper.deleteByVideoId(videoId);
+        notificationMapper.deleteByVideoId(videoId);
+        transcodeJobMapper.deleteByVideoId(videoId);
+        adminVideoMapper.deleteByVideoId(videoId);
         videoSearchService.deleteById(videoId);
     }
 

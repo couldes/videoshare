@@ -72,4 +72,9 @@
         WHERE comment_id = #{commentId}
     </update>
 
+    <!-- 删除某视频全部评论（物理删除，含子评论与已逻辑删除行；删视频时级联使用） -->
+    <delete id="deleteByVideoId">
+        DELETE FROM comment_info WHERE video_id = #{videoId}
+    </delete>
+
 </mapper>

@@ -30,4 +30,7 @@ public interface CommentMapper {
 
     /** 点赞数 ±1 */
     Integer updateLikeCount(@Param("commentId") Long commentId, @Param("count") int count);
+
+    /** 删除某视频的全部评论（物理删除，含子评论与已逻辑删除行；删视频时级联使用） */
+    Integer deleteByVideoId(@Param("videoId") String videoId);
 }
