@@ -205,6 +205,46 @@ public class CommentServiceImpl implements CommentService {
     }
 
     // ============================================================
+    //  admin 端内部接口使用（不校验评论归属，仅限服务间调用）
+    // ============================================================
+
+    @Override
+    public PaginationResultVO<CommentInfo> getCommentListForAdmin(String videoId, Integer pageNum,
+                                                                  Integer pageSize, Integer status) {
+        CommentQuery query = new CommentQuery();
+        query.setVideoId(videoId);
+        query.setPageNum(pageNum);
+        query.setPageSize(pageSize);
+        query.setStatus(status);
+        query.setPCommentId(0L);
+        List<CommentInfo> list = commentMapper.selectTopComments(query);
+        Integer total = commentMapper.countTopComments(videoId, status);
+        return new PaginationResultVO<>(total, pageSize, pageNum, list);
+    }
+
+    @Override
+    public void updateCommentStatusForAdmin(Long commentId, Integer status) {
+        if (status == null || (status != 1 && status != 2)) {
+            throw new BusinessException("非法状态值：1=通过 2=删除");
+        }
+        if (commentMapper.selectByCommentId(commentId) == null) {
+            throw new BusinessException("评论不存在");
+        }
+        commentMapper.updateStatus(commentId, status);
+    }
+
+    @Override
+    public void deleteCommentForAdmin(Long commentId) {
+        if (commentMapper.selectByCommentId(commentId) == null) {
+            throw new BusinessException("评论不存在");
+        }
+        Integer rows = commentMapper.updateStatus(commentId, 2);
+        if (rows == 0) {
+            throw new BusinessException("删除失败");
+        }
+    }
+
+    // ============================================================
     //  私有工具方法
     // ============================================================
 

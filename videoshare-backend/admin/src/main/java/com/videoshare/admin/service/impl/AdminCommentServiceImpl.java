@@ -1,54 +1,47 @@
 package com.videoshare.admin.service.impl;
 
-import com.videoshare.admin.mapper.CommentMapper;
+import com.videoshare.admin.client.CommentInnerApiClient;
 import com.videoshare.admin.service.AdminCommentService;
 import com.videoshare.common.entity.CommentInfo;
 import com.videoshare.common.exception.BusinessException;
-import com.videoshare.common.query.CommentQuery;
 import com.videoshare.common.vo.PaginationResultVO;
+import com.videoshare.common.vo.ResponseVO;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 
+/**
+ * 评论管理已收拢到 web 侧（web CommentServiceImpl + CommentMapper）。
+ * 本实现仅为薄委托层：经 CommentInnerApiClient 调用 web 内部接口，不再直连 comment_info。
+ */
 @Service
 public class AdminCommentServiceImpl implements AdminCommentService {
 
     @Resource
-    private CommentMapper commentMapper;
+    private CommentInnerApiClient commentInnerApiClient;
 
     @Override
     public PaginationResultVO<CommentInfo> getCommentList(String videoId, Integer pageNum,
-                                                           Integer pageSize, Integer status) {
-        CommentQuery query = new CommentQuery();
-        query.setVideoId(videoId);
-        query.setPageNum(pageNum);
-        query.setPageSize(pageSize);
-        query.setStatus(status);
-        query.setPCommentId(0L);
-
-        List<CommentInfo> list = commentMapper.selectTopComments(query);
-        Integer total = commentMapper.countTopComments(videoId, status);
-        return new PaginationResultVO<>(total, pageSize, pageNum, list);
+                                                          Integer pageSize, Integer status) {
+        return ensureSuccess(
+                commentInnerApiClient.getCommentList(videoId, pageNum, pageSize, status)).getData();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateCommentStatus(Long commentId, Integer status) {
-        if (status != 1 && status != 2) {
-            throw new BusinessException("非法状态值：1=通过 2=删除");
-        }
-        Integer rows = commentMapper.updateStatus(commentId, status);
-        if (rows == 0) throw new BusinessException("评论不存在");
+        ensureSuccess(commentInnerApiClient.updateStatus(commentId, status));
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteComment(Long commentId) {
-        CommentInfo comment = commentMapper.selectByCommentId(commentId);
-        if (comment == null) throw new BusinessException("评论不存在");
-        Integer rows = commentMapper.updateStatus(commentId, 2);
-        if (rows == 0) throw new BusinessException("删除失败");
+        ensureSuccess(commentInnerApiClient.delete(commentId));
+    }
+
+    /** web 内部接口返回 error 时转回业务异常，透传错误信息 */
+    private <T> ResponseVO<T> ensureSuccess(ResponseVO<T> vo) {
+        if (!"success".equals(vo.getStatus())) {
+            throw new BusinessException(vo.getInfo());
+        }
+        return vo;
     }
 }
