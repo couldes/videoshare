@@ -9,7 +9,7 @@
 | 数据库 | MySQL 8.0 / Redis（缓存+令牌+推荐）/ Elasticsearch |
 | 视频处理 | FFmpeg HLS 转码（hwaccel 自动适配）+ hls.js |
 | 前端 | Vue 3 + Vite 4 + Element Plus + Pinia + Chart.js |
-| 测试 | Playwright E2E |
+| 测试 | JUnit 5 + Maven Surefire |
 
 ## 项目结构
 
@@ -29,9 +29,6 @@ videoshare-backend/            # Maven 多模块
 videoshare-frontend/           # npm workspaces
 ├── packages/                  # 共享库（api/client/constants/utils）
 └── apps/                      # web + admin 双 SPA
-
-apps/                          # 项目级测试与工具
-└── e2e/                       # Playwright 跨服务端到端冒烟测试
 ```
 
 ## 项目概览
