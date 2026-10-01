@@ -29,6 +29,9 @@ videoshare-backend/            # Maven 多模块
 videoshare-frontend/           # npm workspaces
 ├── packages/                  # 共享库（api/client/constants/utils）
 └── apps/                      # web + admin 双 SPA
+
+apps/                          # 项目级测试与工具
+└── e2e/                       # Playwright 跨服务端到端冒烟测试
 ```
 
 ## 项目概览
