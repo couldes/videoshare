@@ -44,16 +44,27 @@ public class VideoServiceImpl implements VideoService {
     @Value("${project.folder:d:/webser/videoshare/}")
     private String projectFolder;
 
+    /** 构建目录路径，自动处理尾随分隔符 */
+    private String buildPath(String... segments) {
+        StringBuilder path = new StringBuilder();
+        boolean first = true;
+        for (String segment : segments) {
+            if (segment == null || segment.isEmpty()) continue;
+            if (!first && !path.toString().endsWith("/") && !path.toString().endsWith("\\")) {
+                path.append("/");
+            }
+            path.append(segment);
+            first = false;
+        }
+        return path.toString();
+    }
+
     private String getUploadDir() {
-        return projectFolder.endsWith("/") || projectFolder.endsWith("\\")
-                ? projectFolder + "videos/"
-                : projectFolder + "/videos/";
+        return buildPath(projectFolder, "videos");
     }
 
     private String getHlsDir() {
-        return projectFolder.endsWith("/") || projectFolder.endsWith("\\")
-                ? projectFolder + "hls/"
-                : projectFolder + "/hls/";
+        return buildPath(projectFolder, "hls");
     }
 
     /** 从 /video/resource/xxx.mp4 中提取 xxx.mp4 */
