@@ -153,15 +153,42 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     @Override
     public int reindexAll() {
         List<VideoInfo> allVideos = adminVideoMapper.selectAllPublished();
-        List<VideoSearchDocument> docs = new ArrayList<>();
+        int total = allVideos.size();
+        int successCount = 0;
+        int failedCount = 0;
+        List<String> failedVideos = new ArrayList<>();
+
         for (VideoInfo video : allVideos) {
-            UserInfo user = adminUserMapper.selectByUserId(video.getUserId());
-            String nickName = user != null ? user.getNickName() : "";
-            docs.add(VideoSearchDocument.fromVideoInfo(video, nickName));
+            try {
+                // 逐条同步到 ES，失败不影响其他视频
+                String nickName = getUserNameByUserId(video.getUserId());
+                VideoSearchDocument doc = VideoSearchDocument.fromVideoInfo(video, nickName);
+                videoSearchService.save(doc);
+                successCount++;
+            } catch (Exception e) {
+                failedCount++;
+                failedVideos.add(video.getVideoId() + ": " + e.getMessage());
+                log.error("同步视频到 ES 失败，videoId={}, error={}", video.getVideoId(), e.getMessage());
+            }
         }
-        videoSearchService.saveAll(docs);
-        log.info("ES 全量重建索引完成，共 {} 条", docs.size());
-        return docs.size();
+
+        log.info("ES 全量重建索引完成 - 成功：{}, 失败：{}", successCount, failedCount);
+        if (!failedVideos.isEmpty()) {
+            log.warn("失败列表：{}", String.join(", ", failedVideos.subList(0, Math.min(failedVideos.size(), 10))));
+        }
+
+        return successCount;
+    }
+
+    /** 获取用户昵称（容错处理） */
+    private String getUserNameByUserId(String userId) {
+        try {
+            UserInfo user = adminUserMapper.selectByUserId(userId);
+            return user != null ? user.getNickName() : "";
+        } catch (Exception e) {
+            log.warn("查询用户信息失败，userId={}", userId, e);
+            return "";
+        }
     }
 
     /** 同步单个视频到 ES */
