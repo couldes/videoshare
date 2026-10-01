@@ -21,6 +21,7 @@ import com.videoshare.common.search.VideoSearchService;
 import com.videoshare.common.search.SearchResult;
 import com.videoshare.common.search.VideoSearchDocument;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -472,7 +473,9 @@ public class VideoServiceImpl implements VideoService {
             throw new BusinessException("只有已下架视频可以重新发布");
         }
         videoInfoMapper.updateStatus(videoId, VideoStatusEnum.PUBLISHED.getValue());
-        videoSearchService.updateStatus(videoId, VideoStatusEnum.PUBLISHED.getValue());
+        
+        // ES 同步失败不应影响数据库主流程（异步降级）
+        syncToESAsync(videoId);
     }
 
     @Override
@@ -487,7 +490,9 @@ public class VideoServiceImpl implements VideoService {
             throw new BusinessException("只能下架已发布的视频");
         }
         videoInfoMapper.updateStatus(videoId, VideoStatusEnum.OFFLINE.getValue());
-        videoSearchService.updateStatus(videoId, VideoStatusEnum.OFFLINE.getValue());
+        
+        // ES 同步失败不应影响数据库主流程（异步降级）
+        syncToESAsync(videoId);
     }
 
     /** 批量查视频并组装 VO（按传入 ID 顺序） */
@@ -583,6 +588,33 @@ public class VideoServiceImpl implements VideoService {
             videoSearchService.save(VideoSearchDocument.fromVideoInfo(video, nickName));
         } catch (Exception e) {
             log.error("同步视频到 ES 失败，videoId={}", videoId, e);
+        }
+    }
+
+    /** 异步同步视频到 ES（用于状态更新等场景，不阻塞主事务） */
+    @Async("esSyncExecutor")
+    private void syncToESAsync(String videoId) {
+        try {
+            // 重新获取视频信息（可能已变化）
+            VideoInfo video = videoInfoMapper.selectByVideoId(videoId);
+            if (video == null) return;
+            
+            UserInfo user = userInfoMapper.selectByUserId(video.getUserId());
+            String nickName = user != null ? user.getNickName() : "";
+            
+            // 根据状态更新 ES
+            switch (video.getStatus()) {
+                case 1:  // PUBLISHED
+                    videoSearchService.updateStatus(videoId, 1);
+                    break;
+                case 2:  // OFFLINE
+                    videoSearchService.updateStatus(videoId, 2);
+                    break;
+                default:
+                    log.warn("未知视频状态，videoId={}, status={}", videoId, video.getStatus());
+            }
+        } catch (Exception e) {
+            log.error("异步同步视频到 ES 失败，videoId={}", videoId, e);
         }
     }
 
