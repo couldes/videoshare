@@ -75,4 +75,19 @@ public class RedisComponent {
         return stringRedisTemplate.opsForZSet().reverseRangeWithScores(key, 0, -1);
     }
 
+    // 分布式锁：设置键如果不存在，返回设置的 TTL（毫秒），失败返回 null
+    public Long setIfAbsent(String key, String value, long timeoutMs) {
+        Boolean success = stringRedisTemplate.opsForValue()
+                .setIfAbsent(key, value, timeoutMs, TimeUnit.MILLISECONDS);
+        if (success != null && success) {
+            return timeoutMs;
+        }
+        return null;
+    }
+
+    // 删除键（用于释放锁）
+    public void delete(String key) {
+        stringRedisTemplate.delete(key);
+    }
+
 }

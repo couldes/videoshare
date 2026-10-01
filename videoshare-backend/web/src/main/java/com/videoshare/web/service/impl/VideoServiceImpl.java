@@ -232,13 +232,60 @@ public class VideoServiceImpl implements VideoService {
     public boolean toggleAction(String userId, String videoId, Integer actionType) {
         if (userId == null) throw new BusinessException("请先登录");
 
+        // 检查当前是否有记录（带版本号校验，避免乐观锁冲突）
         Integer exists = userActionMapper.checkAction(userId, videoId, actionType);
-        boolean willAdd = (exists == 0); // 当前没有 → 操作后变"有"
+        boolean willAdd = (exists == 0);
 
         if (willAdd) {
+            // INSERT + 原子计数递增（防止并发导致的计数不一致）
             userActionMapper.insert(userId, videoId, actionType);
-            if (actionType == 1) videoInfoMapper.updateLikeCount(videoId, 1);
-            if (actionType == 2) videoInfoMapper.updateFavoriteCount(videoId, 1);
+            
+            // 使用 SETNX 实现原子性，避免多个请求同时更新导致计数错误
+            if (actionType == 1) {
+                // 点赞 - 先尝试获取分布式锁，超时时间 100ms
+                String lockKey = "lock:video:" + videoId + ":like";
+                String lockValue = userId + ":" + System.currentTimeMillis();
+                Long acquired = redisComponent.setIfAbsent(lockKey, lockValue, 100);
+                
+                if (acquired != null && acquired > 0) {
+                    try {
+                        videoInfoMapper.updateLikeCountAtomic(videoId, 1);
+                    } finally {
+                        // 释放锁
+                        redisComponent.delete(lockKey);
+                    }
+                } else {
+                    // 无法获取锁，可能已有其他请求在处理，等待后重试或返回失败
+                    try {
+                        Thread.sleep(50); // 短暂等待
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt(); // 恢复中断状态
+                    }
+                    videoInfoMapper.updateLikeCountAtomic(videoId, 1);
+                }
+            }
+            
+            if (actionType == 2) {
+                // 收藏 - 同样的原子更新逻辑
+                String lockKey = "lock:video:" + videoId + ":fav";
+                String lockValue = userId + ":" + System.currentTimeMillis();
+                Long acquired = redisComponent.setIfAbsent(lockKey, lockValue, 100);
+                
+                if (acquired != null && acquired > 0) {
+                    try {
+                        videoInfoMapper.updateFavoriteCountAtomic(videoId, 1);
+                    } finally {
+                        redisComponent.delete(lockKey);
+                    }
+                } else {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt(); // 恢复中断状态
+                    }
+                    videoInfoMapper.updateFavoriteCountAtomic(videoId, 1);
+                }
+            }
 
             // 点赞通知
             if (actionType == 1) {

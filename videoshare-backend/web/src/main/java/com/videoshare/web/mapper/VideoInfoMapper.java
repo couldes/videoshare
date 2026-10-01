@@ -31,8 +31,14 @@ public interface VideoInfoMapper {
     /** 点赞数 +count（count 可为负数，即取消点赞） */
     Integer updateLikeCount(@Param("videoId") String videoId, @Param("count") int count);
 
+    /** 点赞数原子递增 - 使用 UPDATE...WHERE 防止丢失更新 */
+    Integer updateLikeCountAtomic(@Param("videoId") String videoId, @Param("delta") int delta);
+
     /** 收藏数 +count */
     Integer updateFavoriteCount(@Param("videoId") String videoId, @Param("count") int count);
+
+    /** 收藏数原子递增 - 使用 UPDATE...WHERE 防止丢失更新 */
+    Integer updateFavoriteCountAtomic(@Param("videoId") String videoId, @Param("delta") int delta);
 
     /** 评论数 +count */
     Integer updateCommentCount(@Param("videoId") String videoId, @Param("count") int count);

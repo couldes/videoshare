@@ -237,4 +237,20 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <!-- 点赞数原子递增 - 使用 UPDATE...WHERE 防止丢失更新 -->
+    <update id="updateLikeCountAtomic">
+        UPDATE video_info
+        SET like_count = IFNULL(like_count, 0) + #{delta}
+        WHERE video_id = #{videoId}
+          AND (status = 1 OR status IS NULL)
+    </update>
+
+    <!-- 收藏数原子递增 - 使用 UPDATE...WHERE 防止丢失更新 -->
+    <update id="updateFavoriteCountAtomic">
+        UPDATE video_info
+        SET favorite_count = IFNULL(favorite_count, 0) + #{delta}
+        WHERE video_id = #{videoId}
+          AND (status = 1 OR status IS NULL)
+    </update>
+
 </mapper>
