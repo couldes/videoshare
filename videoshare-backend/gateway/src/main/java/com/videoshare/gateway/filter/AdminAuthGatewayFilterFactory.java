@@ -43,12 +43,13 @@ public class AdminAuthGatewayFilterFactory
                 return chain.filter(exchange);
             }
 
-            // 检查请求头中的 admin 标识
+            // 检查请求头中的 admin 标识（空值防御 + 日志增强）
             String adminAccount = exchange.getRequest().getHeaders()
                     .getFirst("X-Admin-Account");
 
+            // 防御性检查：防止空指针并记录调试信息
             if (adminAccount == null || adminAccount.trim().isEmpty()) {
-                log.warn("Admin 路径未登录访问: {}", path);
+                log.warn("Admin 路径未登录访问：{}, headerValue={}", path, adminAccount);
                 return writeJsonResponse(exchange,
                         ResponseVO.error("未登录或登录已过期，请重新登录"));
             }

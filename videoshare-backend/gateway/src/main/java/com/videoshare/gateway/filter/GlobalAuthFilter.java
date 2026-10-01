@@ -39,10 +39,17 @@ public class GlobalAuthFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+        
+        // 防御性检查：确保 request 不为 null
+        if (request == null) {
+            log.error("请求对象为空，直接放行");
+            return chain.filter(exchange);
+        }
+        
         String path = request.getURI().getPath();
         String method = request.getMethodValue();
 
-        log.info("请求: {} {}", method, path);
+        log.info("请求：{} {}", method, path);
 
         // F4: 拦截内部接口
         if (path.contains("/innerApi")) {
@@ -50,9 +57,13 @@ public class GlobalAuthFilter implements GlobalFilter, Ordered {
                     ResponseVO.error("内部接口禁止外部访问"));
         }
 
-        // F2: 提取并校验 token
-        String token = request.getHeaders().getFirst("Authorization");
-        if (token != null && !token.trim().isEmpty()) {
+        // F2: 提取并校验 token（添加空值防御）
+        String header = request.getHeaders().getFirst("Authorization");
+        
+        // 安全处理 token（防止空指针并去除空白字符）
+        String token = header != null ? header.trim() : null;
+        
+        if (token != null && !token.isEmpty()) {
             try {
                 // 先查 admin token
                 String adminAccount = stringRedisTemplate.opsForValue()
@@ -62,7 +73,7 @@ public class GlobalAuthFilter implements GlobalFilter, Ordered {
                             .header("X-Admin-Account", adminAccount)
                             .build();
                     exchange = exchange.mutate().request(mutated).build();
-                    log.debug("Admin token 有效: {}", adminAccount);
+                    log.debug("Admin token 有效：{}", adminAccount);
                 } else {
                     // 再查用户 token
                     String userId = stringRedisTemplate.opsForValue()
@@ -72,11 +83,13 @@ public class GlobalAuthFilter implements GlobalFilter, Ordered {
                                 .header("X-User-Id", userId)
                                 .build();
                         exchange = exchange.mutate().request(mutated).build();
-                        log.debug("User token 有效: {}", userId);
+                        log.debug("User token 有效：{}", userId);
                     }
                 }
             } catch (Exception e) {
-                log.warn("Redis 不可用，跳过 Gateway 层 token 校验: {}", e.getMessage());
+                // Redis 异常记录完整信息便于诊断
+                log.warn("Redis 不可用或 token 验证失败，error={}", e.getMessage(), e);
+                // 允许请求继续（降级处理，不阻断用户）
             }
         }
 

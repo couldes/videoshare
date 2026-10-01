@@ -34,10 +34,12 @@ public class UserAuthGatewayFilterFactory
         return (exchange, chain) -> {
             String path = exchange.getRequest().getURI().getPath();
 
-            String userId = exchange.getRequest().getHeaders().getFirst("X-User-Id");
+            // 防御性检查：获取用户 ID（添加空值判断和日志增强）
+            String userId = exchange.getRequest().getHeaders()
+                    .getFirst("X-User-Id");
 
             if (userId == null || userId.trim().isEmpty()) {
-                log.warn("用户路径未登录访问: {}", path);
+                log.warn("用户路径未登录访问：{}, headerValue={}", path, userId);
                 return writeJsonResponse(exchange,
                         ResponseVO.error("请先登录或登录已过期"));
             }
